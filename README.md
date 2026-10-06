@@ -4,8 +4,13 @@ A talking kindergarten math game. Pip the frog hops one lily pad for every right
 
 **Play:** https://dfreed.github.io/lily-pad-math/
 
-## What it practises
-Counting, quick-look dot recognition (subitizing), finding numbers to 100, more/fewer, what comes next and counting by 10s, adding and taking away to 20, and making 5 and 10 with ten-frames.
+## Players
+The game opens on **Who's playing?** Add each child once in the Grown-ups corner with their age; names stay on the device.
+
+- **Little learners (ages 3–4):** counting to 3, 5 and 10 (with dot hints on the buttons), finding numbers, shapes, big and small, matching amounts, which has more, and AB / AAB / ABC patterns. A shorter pond (5 pads) so rewards come sooner.
+- **Big kids (ages 5–6):** counting, quick-look dot recognition (subitizing), finding numbers to 100, **tens and ones** (base-ten sticks and cubes, what each digit means, hundreds, 10 more / 10 less), more/fewer, what comes next and counting by 10s, adding and taking away to 20, and making 5 and 10 with ten-frames.
+
+Tens and ones gets extra practice until it is mastered, and after each right answer Pip says what it means ("3 tens and 2 ones make 32"). Hundreds, tens and ones are always the same colors (pink, green, yellow) in both the blocks and the digits.
 
 ## How it adapts
 Each skill has levels. Four first-try right answers out of the last five moves a skill up; a run of misses steps it back down. Missed questions come back a few turns later, and new games open as earlier skills grow. A wrong answer triggers a guided "let's count together" walkthrough instead of a buzzer.

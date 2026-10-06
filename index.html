@@ -182,13 +182,61 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 @keyframes drop{from{transform:translate(-50%,-30px);opacity:0}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:11}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* who's playing */
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px;width:min(640px,100%)}
+.player{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 14px 16px;border-radius:26px;background:var(--card);border:3px solid var(--line);box-shadow:0 7px 0 var(--line);transition:transform .08s}
+.player:active{transform:translateY(5px);box-shadow:0 2px 0 var(--line)}
+.player .av{font-size:clamp(3.4rem,10vw,4.6rem);line-height:1}
+.player b{font:800 clamp(1.9rem,6vw,2.4rem)/1 var(--num)}
+.player small{color:var(--muted);font-size:.9rem}
+.who{font:700 clamp(1.3rem,4.5vw,1.7rem)/1.2 var(--read);margin:0}
+
+/* base-ten blocks: hundreds berry, tens green, ones yellow (digits use the same colors) */
+.base{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:clamp(6px,1.6vw,12px);--u:clamp(11px,3.1vw,30px);max-width:100%}
+.base.h{--u:clamp(7px,1.9vw,17px)}
+.card-ans .base{--u:clamp(6px,1.6vw,14px);gap:4px}
+.stick{position:relative;display:grid;grid-template-rows:repeat(10,var(--u));width:var(--u);gap:1px;padding:1px;background:var(--pad-deep);border-radius:4px}
+.stick i{background:var(--pad);border-radius:2px}
+.stick.new{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.stick.away{opacity:.2;filter:grayscale(1);transition:opacity .5s}
+.flat{position:relative;display:grid;grid-template-columns:repeat(10,var(--u));grid-template-rows:repeat(10,var(--u));gap:1px;padding:1px;background:var(--berry);border-radius:4px}
+.flat i{background:var(--berry-soft);border-radius:1px}
+.ones{display:grid;grid-template-columns:repeat(2,var(--u));gap:3px;align-content:end}
+.ones i{position:relative;width:var(--u);height:var(--u);background:var(--sun);border-radius:3px;box-shadow:inset 0 0 0 1px var(--sun-deep)}
+.stick.lit,.flat.lit{outline:4px solid var(--sun);outline-offset:2px}
+.ones i.lit{outline:3px solid var(--berry);outline-offset:1px}
+.bn[data-n]::after{content:attr(data-n);position:absolute;top:-1.6em;left:50%;transform:translateX(-50%);font:800 .85rem/1.5 var(--num);background:var(--sun);color:var(--on-sun);border-radius:999px;padding:0 .45em;white-space:nowrap;z-index:1}
+.ones i.bn[data-n]::after{top:auto;bottom:-1.7em}
+.dh{color:var(--berry)} .dt{color:var(--pad)} .do{color:var(--sun-deep)}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:.8em;height:.8em;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+
+/* little learner pieces */
+.shape svg{display:block;width:clamp(70px,17vw,140px);height:auto}
+.sz{line-height:1;display:inline-block}
+.mini{display:flex;justify-content:center;gap:4px;margin-top:8px;flex-wrap:wrap;max-width:5.5em;margin-inline:auto}
+.mini i{width:11px;height:11px;border-radius:50%;background:var(--berry)}
+.pat{display:flex;gap:clamp(4px,1.2vw,10px);flex-wrap:wrap;justify-content:center;align-items:center;font-size:clamp(2.1rem,8vw,4.2rem);line-height:1.1}
+.pat span{display:inline-block;transition:transform .2s}
+.pat span.lit{transform:scale(1.25)}
+.pat .gap{width:1.2em;height:1.2em;border:4px dashed var(--sun);border-radius:16px;display:grid;place-items:center;color:var(--sun);font:800 .7em/1 var(--num)}
+.card-ans .shape svg{width:clamp(60px,14vw,120px)}
+.card-ans.lit{outline:5px solid var(--sun);outline-offset:3px}
+
+/* grown-ups tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 14px;font-weight:700}
+.tab[aria-pressed="true"]{background:var(--pad);border-color:var(--pad);color:var(--on-pad)}
+.ages{display:flex;gap:8px;flex-wrap:wrap}
+.ages button{min-width:48px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-weight:700}
+.ages button[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:var(--on-sun)}
 </style>
 </head>
 <body>
-
 <div id="app">
   <div class="bar">
-    <button class="chip" id="home" hidden><span class="t">← Home</span></button>
+    <button class="chip" id="home" hidden><span class="t">← Players</span></button>
     <span></span>
     <button class="chip" id="grownBtn" aria-label="Grown-ups: press and hold to open"><span class="fill"></span><span class="t">Grown-ups · hold</span></button>
   </div>
@@ -200,13 +248,9 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
   <section class="start" id="start">
     <div class="big-frog" id="bigFrog"></div>
     <h1>Lily Pad Math</h1>
-    <p id="hello">Help Pip the frog hop across the pond. Every right answer is one hop!</p>
-    <button class="go" id="play">Play</button>
-    <p class="tip" id="firstRun">Grown-ups: press and hold the button at the top right to add a name and settings.</p>
-    <div class="shelf">
-      <h2>Pond friends</h2>
-      <div class="stickers" id="shelf"></div>
-    </div>
+    <p class="who" id="whoAsk">Who's playing?</p>
+    <div class="players" id="players"></div>
+    <p class="tip" id="firstRun">Grown-ups: add each child once. Names stay on this device.</p>
   </section>
 
   <section class="play" id="playView" hidden>
@@ -233,27 +277,48 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 <div class="overlay" id="grown" hidden>
   <div class="panel grown" role="dialog" aria-labelledby="gTitle">
     <h2 id="gTitle">Grown-ups corner</h2>
-    <p>The game watches which answers come out right on the first try. Four right out of the last five moves a skill up a level; a run of misses steps it back down. Missed questions come back a few turns later. New games open as earlier skills grow. </p>
-    <h3>Head start</h3>
-    <p>For a child who already counts to 20 and knows numbers to 20: skips the easiest levels. The game still steps back down if it is too hard.</p>
-    <div class="btns"><button class="btn" id="headStart">Give a head start</button></div>
-    <div class="field">
-      <label for="kidName">Player name <input type="text" id="kidName" maxlength="20" autocomplete="off"></label>
-      <label for="voiceOn"><input type="checkbox" id="voiceOn"> Read questions aloud</label>
+    <div class="tabs" id="tabs"></div>
+
+    <div id="addPane" hidden>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h3>Add a player</h3>
+        <div class="field"><label for="addName">Name <input type="text" id="addName" maxlength="20" autocomplete="off"></label></div>
+        <div class="field"><span>Age</span><div class="ages" id="addAges"></div></div>
+        <p id="addTrack"></p>
+        <div class="btns"><button class="btn primary" id="addGo">Add player</button></div>
+      </div>
     </div>
-    <h3>Skills</h3>
-    <div class="skills" id="skillList"></div>
-    <p id="totals"></p>
-    <p id="syncNote"></p>
-    <div class="btns" id="resetRow">
-      <button class="btn primary" id="closeGrown">Done</button>
-      <button class="btn danger" id="resetBtn">Start over…</button>
+
+    <div id="playerPane" hidden>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="field"><label for="pName">Name <input type="text" id="pName" maxlength="20" autocomplete="off"></label></div>
+        <div class="field"><span>Age</span><div class="ages" id="pAges"></div></div>
+        <p id="pTrack"></p>
+        <h3>Skills</h3>
+        <div class="skills" id="skillList"></div>
+        <p id="totals"></p>
+        <div id="headRow">
+          <h3>Head start</h3>
+          <p>For a child who already counts to 20 and knows numbers to 20: skips the easiest levels. Tens and ones always starts at the beginning. The game still steps back down if it is too hard.</p>
+          <div class="btns" style="margin-top:8px"><button class="btn" id="headStart">Give a head start</button></div>
+        </div>
+        <div class="btns" id="playerBtns">
+          <button class="btn danger" id="resetBtn">Start over…</button>
+          <button class="btn danger" id="removeBtn">Remove player…</button>
+        </div>
+      </div>
     </div>
+
     <div class="btns" id="confirmRow" hidden>
-      <p style="flex-basis:100%">Erase all progress and pond friends?</p>
-      <button class="btn danger" id="resetYes">Yes, erase it</button>
-      <button class="btn" id="resetNo">Keep progress</button>
+      <p style="flex-basis:100%" id="confirmText"></p>
+      <button class="btn danger" id="confirmYes">Yes</button>
+      <button class="btn" id="confirmNo">Cancel</button>
     </div>
+
+    <h3>Settings</h3>
+    <div class="field"><label for="voiceOn"><input type="checkbox" id="voiceOn"> Read questions aloud</label></div>
+    <p>Each skill moves up a level after four first-try right answers out of five, and back down after a run of misses. Missed questions come back a few turns later. Progress is saved on this iPad; deleting the app from the home screen erases it.</p>
+    <div class="btns"><button class="btn primary" id="closeGrown">Done</button></div>
   </div>
 </div>
 
@@ -275,84 +340,79 @@ $('#frog').innerHTML = FROG; $('#bigFrog').innerHTML = FROG;
 
 const THINGS = [['🍎','apples','apple'],['🐞','ladybugs','ladybug'],['🐟','fish','fish'],['🦆','ducks','duck'],['⭐','stars','star'],['🍓','strawberries','strawberry'],['🐢','turtles','turtle'],['🌼','flowers','flower'],['🐝','bees','bee'],['🦋','butterflies','butterfly'],['🐌','snails','snail'],['🍪','cookies','cookie']];
 const FRIENDS = ['🐢','🦆','🐞','🦋','🐌','🦔','🐝','🦉','🐙','🦀','🐳','🦒','🦁','🐼','🦄','🐧','🦊','🐰','🐨','🦜'];
-const PRAISE = ['Great job!','You got it!','Hop hop hooray!','Super!','That\'s right!','Way to go!','Ribbit! Correct!','Nice thinking!'];
-const OOPS = ['Good try! Let\'s figure it out together.','Almost! Let\'s look again.','Hmm, let\'s count it together.'];
+const AVATARS = ['🐸','🦊','🐻','🐯','🐰','🐼','🦁','🐨','🐶','🐱'];
+const PRAISE = { big: ['Great job!','You got it!','Hop hop hooray!','Super!','That\'s right!','Way to go!','Ribbit! Correct!','Nice thinking!'],
+                 little: ['Yay!','Good job!','You did it!','Hooray!','Ribbit! Yes!','Wow!'] };
+const OOPS = { big: ['Good try! Let\'s figure it out together.','Almost! Let\'s look again.','Hmm, let\'s work it out together.'],
+               little: ['Good try! Let\'s look together.','Oops! Let\'s try again together.'] };
 
 const SKILLS = {
-  count:   { name: 'Counting', levels: ['Count to 5','Count to 10','Count 6 to 15','Count to 20'], needs: null },
-  flash:   { name: 'Quick look', levels: ['Dice dots','Ten-frame dots','Two groups to 10','Two groups to 20'], needs: null },
-  numeral: { name: 'Finding numbers', levels: ['Numbers 1–5','Numbers 1–10','Teen numbers','Numbers to 30','Numbers to 100'], needs: null },
-  compare: { name: 'More or fewer', levels: ['More, groups to 5','More, groups to 10','Bigger number to 10','Bigger or smaller to 20'], needs: ['count', 2] },
-  next:    { name: 'What comes next', levels: ['After, to 10','After, to 20','Before, to 20','After, to 50','Count by 10s'], needs: ['numeral', 2] },
-  add:     { name: 'Adding', levels: ['Picture sums to 5','Picture sums to 10','Number sums to 10','Missing number','Sums to 20'], needs: ['count', 2] },
-  sub:     { name: 'Taking away', levels: ['Picture take-away from 5','Picture take-away from 10','Number take-away from 10','Take-away from 20'], needs: ['add', 2] },
-  frame:   { name: 'Making 5 and 10', levels: ['Make 5','Make 10','Make 10, no pictures'], needs: ['add', 2] },
+  // Big kid track (ages 5–6)
+  count:   { track: 'big', name: 'Counting', levels: ['Count to 5','Count to 10','Count 6 to 15','Count to 20'], needs: null },
+  flash:   { track: 'big', name: 'Quick look', levels: ['Dice dots','Ten-frame dots','Two groups to 10','Two groups to 20'], needs: null },
+  numeral: { track: 'big', name: 'Finding numbers', levels: ['Numbers 1–5','Numbers 1–10','Teen numbers','Numbers to 30','Numbers to 100'], needs: null },
+  place:   { track: 'big', name: 'Tens and ones', focus: 2, levels: ['Teens are 1 ten and some ones','Tens and ones to 50','What each digit means','Find the matching blocks','Hundreds, tens and ones','10 more, 10 less'], needs: ['numeral', 2] },
+  compare: { track: 'big', name: 'More or fewer', levels: ['More, groups to 5','More, groups to 10','Bigger number to 10','Bigger or smaller to 20'], needs: ['count', 2] },
+  next:    { track: 'big', name: 'What comes next', levels: ['After, to 10','After, to 20','Before, to 20','After, to 50','Count by 10s'], needs: ['numeral', 2] },
+  add:     { track: 'big', name: 'Adding', levels: ['Picture sums to 5','Picture sums to 10','Number sums to 10','Missing number','Sums to 20'], needs: ['count', 2] },
+  sub:     { track: 'big', name: 'Taking away', levels: ['Picture take-away from 5','Picture take-away from 10','Number take-away from 10','Take-away from 20'], needs: ['add', 2] },
+  frame:   { track: 'big', name: 'Making 5 and 10', levels: ['Make 5','Make 10','Make 10, no pictures'], needs: ['add', 2] },
+  // Little learner track (ages 3–4)
+  lcount:   { track: 'little', name: 'Counting', levels: ['Count to 3','Count to 5','Count to 10'], needs: null },
+  lshape:   { track: 'little', name: 'Shapes', levels: ['Circle, square, triangle','Add star and heart','Add rectangle, oval, diamond'], needs: null },
+  lsize:    { track: 'little', name: 'Big and small', levels: ['Which is big?','Big or small?','Biggest and smallest'], needs: null },
+  lnum:     { track: 'little', name: 'Numbers', levels: ['Numbers 1–3','Numbers 1–5','Numbers 1–10'], needs: ['lcount', 2] },
+  lmatch:   { track: 'little', name: 'Same amount', levels: ['Match 1 to 3','Match 1 to 5'], needs: ['lcount', 2] },
+  lmore:    { track: 'little', name: 'Which has more?', levels: ['More, easy','More, up to 6'], needs: ['lcount', 2] },
+  lpattern: { track: 'little', name: 'Patterns', levels: ['AB AB','AAB and ABB','ABC'], needs: ['lshape', 2] },
 };
+const TRACK = {
+  big:    { label: 'Big kid games (ages 5–6)', pond: 10, rate: .9 },
+  little: { label: 'Little learner games (ages 3–4)', pond: 5, rate: .82 },
+};
+const trackFor = age => age <= 4 ? 'little' : 'big';
+const skillsFor = tr => Object.keys(SKILLS).filter(k => SKILLS[k].track === tr);
+// "Head start" levels for a kindergartner who already counts and names numbers to 20 (big track only).
+const START = { count: 3, flash: 2, numeral: 3, compare: 3, next: 2, add: 2, sub: 1, frame: 1, place: 1 };
 
-/* ---------- state ---------- */
-const KEY = 'lilypad-math-v1';
-// "Head start" levels for a kindergartner who already counts and names numbers to 20.
-// Applied only when a grown-up taps Head start; the engine moves each skill up or down from there.
-const START = { count: 3, flash: 2, numeral: 3, compare: 3, next: 2, add: 2, sub: 1, frame: 1 };
-function fresh() {
-  const skills = {};
-  for (const k in SKILLS) skills[k] = { level: 1, hist: [], seen: 0, correct: 0, mastered: false };
-  return { v: 1, name: '', voice: true, skills, review: [], total: 0, pad: 0, stickers: [], updated: 0 };
+/* ---------- players + storage ---------- */
+const KEY = 'lilypad-math-v2', OLD_KEY = 'lilypad-math-v1';
+const blankSkill = () => ({ level: 1, hist: [], seen: 0, correct: 0, mastered: false });
+function newPlayer(name, age) {
+  const used = new Set(store.players.map(p => p.avatar));
+  return fixPlayer({ id: 'p' + Date.now().toString(36) + rnd(100, 999), name, age, avatar: AVATARS.find(a => !used.has(a)) || pick(AVATARS),
+    skills: {}, review: [], total: 0, pad: 0, stickers: [] });
 }
-function normalize(s) {
-  const f = fresh();
-  if (!s || typeof s !== 'object') return f;
-  const out = Object.assign(f, s);
-  out.skills = Object.assign(fresh().skills, s.skills || {});
-  for (const k in SKILLS) {
-    const sk = out.skills[k] = Object.assign({ level: 1, hist: [], seen: 0, correct: 0, mastered: false }, out.skills[k]);
-    sk.level = Math.min(Math.max(1, sk.level), SKILLS[k].levels.length);
+function fixPlayer(p) {
+  p.age = +p.age || 5; p.track = trackFor(p.age);
+  p.skills = p.skills || {};
+  for (const k of skillsFor(p.track)) {
+    const s = p.skills[k] = Object.assign(blankSkill(), p.skills[k]);
+    s.level = Math.min(Math.max(1, s.level), SKILLS[k].levels.length);
   }
-  if (!Array.isArray(out.review)) out.review = [];
-  if (!Array.isArray(out.stickers)) out.stickers = [];
-  return out;
+  if (!Array.isArray(p.review)) p.review = [];
+  if (!Array.isArray(p.stickers)) p.stickers = [];
+  p.review = p.review.filter(r => SKILLS[r.skill] && SKILLS[r.skill].track === p.track);
+  p.total = p.total || 0;
+  p.pad = Math.min(p.pad || 0, TRACK[p.track].pond - 1);
+  return p;
 }
-let state = fresh();
-try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch (e) {}
-
-function save() {
-  state.updated = Date.now();
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-  scheduleCloud();
-}
-
-/* cloud sync (signed-in viewers): keeps progress across devices */
-let cloud = null, cloudBusy = false, cloudDirty = false, cloudTimer = 0;
-function scheduleCloud() { if (!cloud) return; clearTimeout(cloudTimer); cloudTimer = setTimeout(flushCloud, 2000); }
-async function flushCloud() {
-  if (!cloud) return;
-  if (cloudBusy) { cloudDirty = true; return; }
-  cloudBusy = true;
-  try { await cloud.set({ json: JSON.stringify(state), total: state.total, updated: state.updated }); } catch (e) {}
-  cloudBusy = false;
-  if (cloudDirty) { cloudDirty = false; scheduleCloud(); }
-}
-(async () => {
-  try {
-    if (!window.claude || !window.claude.use) return;
-    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
-    if (!db || !user) return;
-    const id = await user.id();
-    if (!id) return;
-    const ref = db.doc('data/users/' + id + '/progress');
-    const snap = await ref.get();
-    if (snap.exists) {
-      const d = snap.data();
-      if (d && typeof d.json === 'string' && (d.total || 0) > state.total && $('#playView').hidden) {
-        state = normalize(JSON.parse(d.json));
-        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-        renderStart(); buildPond();
-      }
+let store = { v: 2, voice: true, players: [], current: null };
+try {
+  const s = JSON.parse(localStorage.getItem(KEY));
+  if (s && Array.isArray(s.players)) store = Object.assign(store, s);
+  else {
+    const o = JSON.parse(localStorage.getItem(OLD_KEY));   // carry over progress from the one-player version
+    if (o && (o.total > 0 || o.name)) {
+      store.voice = o.voice !== false;
+      store.players.push({ id: 'p1', name: o.name || 'Player 1', age: 5, avatar: '🐸', skills: o.skills, review: o.review, total: o.total, pad: o.pad, stickers: o.stickers });
     }
-    cloud = ref;
-    if (state.total > 0) scheduleCloud();
-  } catch (e) {}
-})();
+  }
+} catch (e) {}
+store.players = store.players.map(fixPlayer);
+let P = null;   // the player who is playing right now
+function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+const trk = () => (P ? P.track : 'big');
 
 /* ---------- sound + speech ---------- */
 let ac = null;
@@ -375,16 +435,16 @@ function pickVoice() {
   } catch (e) {}
 }
 try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
-const canSpeak = () => state.voice && 'speechSynthesis' in window;
+const canSpeak = () => store.voice && 'speechSynthesis' in window;
 function say(text, minMs = 0) {
   return new Promise(resolve => {
     let done = false; const fin = () => { if (!done) { done = true; resolve(); } };
-    const fallback = Math.max(minMs, canSpeak() ? 900 + text.length * 75 : 350 + text.length * 30);
+    const fallback = Math.max(minMs, canSpeak() ? 900 + text.length * 80 : 350 + text.length * 30);
     const start = Date.now();
     if (canSpeak()) {
       try {
         const u = new SpeechSynthesisUtterance(text);
-        u.rate = .9; u.pitch = 1.12; if (voice) u.voice = voice;
+        u.rate = TRACK[trk()].rate; u.pitch = 1.12; if (voice) u.voice = voice;
         u.onend = () => { const left = minMs - (Date.now() - start); left > 0 ? setTimeout(fin, left) : fin(); };
         u.onerror = fin;
         speechSynthesis.speak(u);
@@ -438,9 +498,52 @@ function choicesFor(ans, n, lo, hi, extra = []) {
   for (let c = lo; out.length < n && c <= hi + 10; c++) if (!out.includes(c)) out.push(c);
   return out.sort((a, b) => a - b);
 }
+// Base-ten blocks. Returns the element plus each piece with its value, in counting order.
+function baseEl(h, t, o) {
+  const b = el('div', 'base' + (h ? ' h' : '')), parts = [];
+  for (let i = 0; i < h; i++) { const f = el('div', 'flat bn'); for (let j = 0; j < 100; j++) f.append(el('i')); b.append(f); parts.push({ el: f, v: 100 }); }
+  for (let i = 0; i < t; i++) { const r = el('div', 'stick bn'); for (let j = 0; j < 10; j++) r.append(el('i')); b.append(r); parts.push({ el: r, v: 10 }); }
+  if (o) { const os = el('div', 'ones'); for (let i = 0; i < o; i++) { const c = el('i', 'bn'); os.append(c); parts.push({ el: c, v: 1 }); } b.append(os); }
+  return { el: b, parts };
+}
+async function countParts(parts, start = 0) {
+  let total = start;
+  for (const p of parts) {
+    total += p.v; p.el.classList.add('lit'); p.el.dataset.n = total;
+    tone(p.v === 1 ? 660 : p.v === 10 ? 520 : 390, .14, 'sine', 0, .07);
+    await say(String(total), 560);
+  }
+}
+// A number with its digits colored by place: hundreds berry, tens green, ones yellow.
+function digits(n) {
+  const d = el('div', 'eq'), s = String(n), cls = s.length === 3 ? ['dh', 'dt', 'do'] : s.length === 2 ? ['dt', 'do'] : ['do'];
+  [...s].forEach((c, i) => d.append(el('span', cls[i], c)));
+  return d;
+}
+function legend(h) {
+  const l = el('div', 'legend');
+  const add = (t, c) => { const s = el('span', '', t); s.style.setProperty('--c', c); l.append(s); };
+  if (h) add('hundred = 100', 'var(--berry)');
+  add('ten = 10', 'var(--pad)'); add('one = 1', 'var(--sun)');
+  return l;
+}
+const SHAPES = {
+  circle: ['<circle cx="50" cy="50" r="42"/>', 'A circle is round, like a ball.'],
+  square: ['<rect x="10" y="10" width="80" height="80" rx="6"/>', 'A square has four sides that are all the same.'],
+  triangle: ['<polygon points="50,8 94,90 6,90"/>', 'A triangle has three sides and three points.'],
+  star: ['<polygon points="50,6 61,38 95,38 67,58 78,92 50,72 22,92 33,58 5,38 39,38"/>', 'A star has five points.'],
+  heart: ['<path d="M50 88 C20 66 6 50 6 32 C6 16 18 8 30 8 C40 8 47 14 50 22 C53 14 60 8 70 8 C82 8 94 16 94 32 C94 50 80 66 50 88Z"/>', 'A heart, like on a valentine.'],
+  rectangle: ['<rect x="4" y="24" width="92" height="52" rx="5"/>', 'A rectangle is long, like a door lying down.'],
+  oval: ['<ellipse cx="50" cy="50" rx="45" ry="30"/>', 'An oval is like an egg.'],
+  diamond: ['<polygon points="50,4 90,50 50,96 10,50"/>', 'A diamond is like a kite.'],
+};
+const SHAPE_COLORS = ['var(--berry)', 'var(--sun)', 'var(--pad)', 'var(--sun-deep)'];
+function shapeEl(name, color) { const d = el('div', 'shape'); d.innerHTML = `<svg viewBox="0 0 100 100" style="fill:${color}" aria-hidden="true">${SHAPES[name][0]}</svg>`; return d; }
+const PAT = [['🍎','apple'],['🍌','banana'],['⭐','star'],['🐸','frog'],['🌼','flower'],['🚗','car'],['🐟','fish'],['🍓','strawberry']];
 
 /* ---------- question generators ---------- */
 const GEN = {
+  /* ===== big kid track ===== */
   count(L, p) {
     const R = [[1, 5], [1, 10], [6, 15], [10, 20]][L - 1];
     p = p || { n: rnd(...R), t: rnd(0, THINGS.length - 1) };
@@ -474,12 +577,8 @@ const GEN = {
       onShow: () => setTimeout(() => { if (!peek.dataset.open) peek.classList.add('covered'); }, ms),
       help: async () => {
         peek.dataset.open = '1'; peek.classList.remove('covered'); bar.hidden = true;
-        if (b && L === 4) {
-          await say(`${a}, then count on.`);
-          await countThrough(dots().slice(a), a + 1);
-        } else {
-          await countThrough(dots());
-        }
+        if (b && L === 4) { await say(`${a}, then count on.`); await countThrough(dots().slice(a), a + 1); }
+        else await countThrough(dots());
         await say(b ? `${a} and ${b} make ${total}!` : `${total} dots!`);
       } };
   },
@@ -492,18 +591,96 @@ const GEN = {
     return { p, say: `Find the number ${n}.`, text: 'Tap the number you hear.', stage: st, answer: n,
       choices: choicesFor(n, L === 1 ? 3 : 4, 0, 110, extra),
       help: async () => {
-        if (n > 20) {
-          const tens = Math.floor(n / 10), ones = n % 10;
-          st.replaceChildren(eq([n]));
-          await say(`${n} has ${tens} tens${ones ? ' and ' + ones + ' ones' : ''}. It starts with ${tens}.`);
+        if (n >= 20) {
+          const t = Math.floor(n / 10), o = n % 10, b = baseEl(0, t, o);
+          st.replaceChildren(digits(n), b.el);
+          await say(`${n} is ${t} tens${o ? ' and ' + o + ' ones' : ''}. It starts with ${t}.`);
           await say(`Find ${n}.`);
           return;
         }
         const dots = objs(n, '🔵'); st.replaceChildren(dots);
-        if (n > 10) { await say(`${n} is ten and ${n - 10} more.`); }
-        else if (n === 10) { await say('Ten is a full frame.'); }
-        else { await countThrough(dots.querySelectorAll('.obj')); }
+        if (n > 10) await say(`${n} is ten and ${n - 10} more.`);
+        else if (n === 10) await say('Ten is a full frame.');
+        else await countThrough(dots.querySelectorAll('.obj'));
         await say(`Find ${n}.`);
+      } };
+  },
+  place(L, p) {
+    if (L === 1) {
+      p = p || { o: rnd(1, 9) };
+      const o = p.o, n = 10 + o, b = baseEl(0, 1, o);
+      return { p, say: 'How many blocks? A tall stick is ten.', text: 'How many blocks?', stage: stack(b.el, legend()), answer: n,
+        choices: choicesFor(n, 4, 1, 99, [o, o * 10 + 1, n + 10]),
+        teach: `1 ten and ${o} ${o === 1 ? 'one' : 'ones'} make ${n}.`,
+        help: async () => { await say('The tall stick is ten. Then count on.'); await countParts(b.parts); await say(`1 ten and ${o} ones make ${n}.`); } };
+    }
+    if (L === 2) {
+      p = p || { t: rnd(2, 5), o: rnd(0, 9) };
+      const { t, o } = p, n = 10 * t + o, b = baseEl(0, t, o);
+      const extra = [t + o, n + 10, n - 10]; if (o) extra.unshift(10 * o + t);
+      return { p, say: 'How many blocks? Count the tens first. Ten, twenty...', text: 'How many blocks?', stage: stack(b.el, legend()), answer: n,
+        choices: choicesFor(n, 4, 1, 99, extra),
+        teach: `${t} tens and ${o} ones make ${n}.`,
+        help: async () => { await say('Count the tens by tens. Then count the ones.'); await countParts(b.parts); await say(`${t} tens and ${o} ones make ${n}.`); } };
+    }
+    if (L === 3) {
+      if (!p) { let t, o; do { t = rnd(1, 9); o = rnd(0, 9); } while (t === o); p = { t, o, ask: Math.random() < .5 ? 't' : 'o' }; }
+      const { t, o } = p, n = 10 * t + o, tens = p.ask === 't', ans = tens ? t : o;
+      const st = stack(digits(n));
+      const q = `How many ${tens ? 'tens' : 'ones'} are in ${n}?`;
+      return { p, say: q, text: q, stage: st, answer: ans,
+        choices: choicesFor(ans, 4, 0, 9, [tens ? o : t]),
+        teach: `In ${n}, the ${t} means ${t} tens, that's ${t * 10}. The ${o} means ${o} ones.`,
+        help: async () => {
+          const b = baseEl(0, t, o); st.append(b.el, legend());
+          await say(`${n} is ${t} tens and ${o} ones. The first number tells the tens.`);
+          await countParts(b.parts);
+          await say(`So there ${ans === 1 ? 'is' : 'are'} ${ans} ${tens ? (ans === 1 ? 'ten' : 'tens') : (ans === 1 ? 'one' : 'ones')}.`);
+        } };
+    }
+    if (L === 4) {
+      if (!p) {
+        let t, o; do { t = rnd(1, 6); o = rnd(1, 9); } while (t === o);
+        const near = Math.random() < .5 ? [t, o === 9 ? 8 : o + 1] : [t === 1 ? 2 : t - 1, o];
+        p = { t, o, opts: shuffle([[t, o], [o, t], near]) };
+      }
+      const { t, o } = p, n = 10 * t + o;
+      const cards = p.opts.map(([a, b]) => baseEl(0, a, b).el);
+      const answer = String(p.opts.findIndex(([a, b]) => a === t && b === o));
+      return { p, kind: 'cards', cards, say: `Which blocks show ${n}?`, text: `Which blocks show ${n}?`, stage: stack(digits(n), legend()), answer,
+        teach: `${n} is ${t} tens and ${o} ones.`,
+        help: async () => { await say(`${n} is ${t} tens and ${o} ones. Look for ${t} tall ${t === 1 ? 'stick' : 'sticks'} and ${o} little ${o === 1 ? 'cube' : 'cubes'}.`); } };
+    }
+    if (L === 5) {
+      p = p || { h: rnd(1, 3), t: rnd(0, 9), o: rnd(0, 9) };
+      const { h, t, o } = p, n = 100 * h + 10 * t + o, b = baseEl(h, t, o);
+      const opts = [n];
+      for (const c of shuffle([100 * h + 10 * o + t, 100 * t + 10 * h + o, n + 100, n + 10, n - 10, n + 1]))
+        if (opts.length < 4 && c > 0 && c < 1000 && !opts.includes(c)) opts.push(c);
+      return { p, say: 'How many blocks? A big square is one hundred.', text: 'How many blocks?', stage: stack(b.el, legend(true)), answer: n,
+        choices: opts.sort((x, y) => x - y),
+        teach: `${h} ${h === 1 ? 'hundred' : 'hundreds'}, ${t} tens and ${o} ones make ${n}.`,
+        help: async () => { await say('Count hundreds first, then tens, then ones.'); await countParts(b.parts); await say(`${n}!`); } };
+    }
+    // L6: ten more / ten less
+    p = p || { n: rnd(12, 88), more: Math.random() < .5 };
+    const { n, more } = p, t = Math.floor(n / 10), o = n % 10, ans = more ? n + 10 : n - 10, b = baseEl(0, t, o);
+    const st = stack(digits(n), b.el);
+    const q = `What is 10 ${more ? 'more' : 'less'} than ${n}?`;
+    return { p, say: q, text: q, stage: st, answer: ans,
+      choices: choicesFor(ans, 4, 0, 99, [more ? n + 1 : n - 1, ans + 1, ans - 1]),
+      teach: `10 ${more ? 'more' : 'less'} only changes the tens. ${n}, ${ans}.`,
+      help: async () => {
+        if (more) {
+          const r = el('div', 'stick bn new'); for (let j = 0; j < 10; j++) r.append(el('i'));
+          const ones = b.el.querySelector('.ones'); ones ? b.el.insertBefore(r, ones) : b.el.append(r);
+          await say('Add one more ten stick.');
+        } else {
+          const bars = b.el.querySelectorAll('.stick'); bars[bars.length - 1].classList.add('away');
+          await say('Take away one ten stick.');
+        }
+        st.replaceChildren(digits(ans), b.el);
+        await say(`The tens go ${more ? 'up' : 'down'} by one. ${ans}!`);
       } };
   },
   compare(L, p) {
@@ -513,20 +690,18 @@ const GEN = {
       p = { a, b, t: rnd(0, THINGS.length - 1), less: L === 4 && Math.random() < .45 };
     }
     const { a, b } = p, [e, pl] = THINGS[p.t], pics = L <= 2;
-    const winner = p.less ? (a < b ? 'L' : 'R') : (a > b ? 'L' : 'R');
+    const answer = (p.less ? a < b : a > b) ? '0' : '1';
     const mk = n => pics ? objs(n, e) : el('span', '', String(n));
     const cards = [mk(a), mk(b)];
     const q = pics ? `Which side has more ${pl}?` : p.less ? 'Which number is smaller?' : 'Which number is bigger?';
-    return { p, kind: 'pick2', cards, say: q, text: q, stage: stack(el('div', 'listen', pics ? '⚖️' : '?')), answer: winner,
+    return { p, kind: 'cards', cards, say: q, text: q, stage: stack(el('div', 'listen', pics ? '⚖️' : '?')), answer,
       help: async () => {
         const big = Math.max(a, b), small = Math.min(a, b);
         if (pics) {
           await countThrough(cards[0].querySelectorAll('.obj'));
           await countThrough(cards[1].querySelectorAll('.obj'));
           await say(`${big} is more than ${small}.`);
-        } else {
-          await say(`When we count, ${big} comes after ${small}. So ${big} is bigger, and ${small} is smaller.`);
-        }
+        } else await say(`When we count, ${big} comes after ${small}. So ${big} is bigger, and ${small} is smaller.`);
       } };
   },
   next(L, p) {
@@ -540,6 +715,7 @@ const GEN = {
     const t = byTen ? `Count by tens. What comes after ${n}?` : before ? `What comes before ${n}?` : `What comes after ${n}?`;
     return { p, say: t, text: t, stage: nl, answer: ans,
       choices: choicesFor(ans, L === 1 ? 3 : 4, 0, 110, byTen ? [n + 1, n + 20, n - 10] : L === 4 ? [ans + 10, ans - 10] : []),
+      teach: byTen ? `${ans} is ${ans / 10} tens.` : null,
       help: async () => {
         if (before) {
           await say(`Let's count backwards.`);
@@ -582,18 +758,16 @@ const GEN = {
           await say(`We counted ${b} more. ${a} plus ${b} makes ${c}.`);
         } };
     }
-    const sum2 = a + b;
-    const pics = el('div', 'objs');
-    const ga = objs(a, e), gb = objs(b, e);
-    pics.append(ga, el('span', 'plus', '+'), gb);
+    const total = a + b, pics = el('div', 'objs');
+    pics.append(objs(a, e), el('span', 'plus', '+'), objs(b, e));
     const st = stack(L <= 2 ? pics : null, eq([a, '+', b, '=', '?']));
     const t = L <= 2 ? `${a} ${a === 1 ? sg : pl} and ${b} more. How many in all?` : `What is ${a} plus ${b}?`;
-    return { p, say: t, text: L <= 2 ? 'How many in all?' : `What is ${a} + ${b}?`, stage: st, answer: sum2,
-      choices: choicesFor(sum2, L === 1 ? 3 : 4, 1, 12),
+    return { p, say: t, text: L <= 2 ? 'How many in all?' : `What is ${a} + ${b}?`, stage: st, answer: total,
+      choices: choicesFor(total, L === 1 ? 3 : 4, 1, 12),
       help: async () => {
         if (L > 2) st.prepend(pics);
         await countThrough([...pics.querySelectorAll('.obj')]);
-        await say(`${a} plus ${b} is ${sum2}!`);
+        await say(`${a} plus ${b} is ${total}!`);
       } };
   },
   sub(L, p) {
@@ -629,15 +803,111 @@ const GEN = {
         await say(`${k} and ${ans} make ${size}!`);
       } };
   },
+
+  /* ===== little learner track ===== */
+  lcount(L, p) {
+    const hi = [3, 5, 10][L - 1];
+    p = p || { n: rnd(1, hi), t: rnd(0, THINGS.length - 1) };
+    const [e, pl, sg] = THINGS[p.t], st = objs(p.n, e);
+    return { p, say: `How many ${pl}? Let's count!`, text: `How many ${pl}?`, stage: st, answer: p.n, dots: L <= 2,
+      choices: choicesFor(p.n, L === 1 ? 2 : 3, 1, hi),
+      help: async () => { await countThrough(st.querySelectorAll('.obj')); await say(`${p.n}! ${p.n} ${p.n === 1 ? sg : pl}!`); } };
+  },
+  lnum(L, p) {
+    const hi = [3, 5, 10][L - 1];
+    p = p || { n: rnd(1, hi) };
+    const n = p.n, st = stack(el('div', 'listen', '?'));
+    return { p, say: `Find the number ${n}!`, text: 'Find the number you hear.', stage: st, answer: n,
+      choices: choicesFor(n, L === 1 ? 2 : 3, 1, hi),
+      help: async () => {
+        const dots = objs(n, '🔵'); st.replaceChildren(dots);
+        await countThrough(dots.querySelectorAll('.obj'));
+        await say(`This is how ${n} looks. Find ${n}!`);
+      } };
+  },
+  lshape(L, p) {
+    const pool = [['circle', 'square', 'triangle'], ['circle', 'square', 'triangle', 'star', 'heart'], Object.keys(SHAPES)][L - 1];
+    if (!p) {
+      const target = pick(pool), n = L === 1 ? 2 : 3;
+      const opts = shuffle([target, ...shuffle(pool.filter(s => s !== target)).slice(0, n - 1)]);
+      p = { target, opts, cols: shuffle(SHAPE_COLORS.slice()) };
+    }
+    const cards = p.opts.map((s, i) => shapeEl(s, p.cols[i % p.cols.length]));
+    const answer = String(p.opts.indexOf(p.target));
+    return { p, kind: 'cards', cards, say: `Find the ${p.target}!`, text: `Find the ${p.target}!`, stage: stack(el('div', 'listen', '?')), answer,
+      help: async () => { await say(SHAPES[p.target][1]); } };
+  },
+  lsize(L, p) {
+    if (!p) {
+      const t = rnd(0, THINGS.length - 1);
+      if (L === 3) p = { t, sizes: shuffle([1.6, 3, 5]), ask: Math.random() < .5 ? 'big' : 'small' };
+      else p = { t, sizes: shuffle([1.8, 5]), ask: L === 1 ? 'big' : (Math.random() < .5 ? 'big' : 'small') };
+    }
+    const e = THINGS[p.t][0];
+    const cards = p.sizes.map(s => { const x = el('span', 'sz', e); x.style.fontSize = s + 'rem'; return x; });
+    const target = p.ask === 'big' ? Math.max(...p.sizes) : Math.min(...p.sizes);
+    const word = L === 3 ? (p.ask === 'big' ? 'biggest' : 'smallest') : (p.ask === 'big' ? 'big' : 'small');
+    const q = L === 3 ? `Which one is the ${word}?` : `Which one is ${word}?`;
+    return { p, kind: 'cards', cards, say: q, text: q, stage: stack(el('div', 'listen', p.ask === 'big' ? '🐘' : '🐭')), answer: String(p.sizes.indexOf(target)),
+      help: async () => { await say(p.ask === 'big' ? 'Big like an elephant! Look for the one that takes up the most room.' : 'Small like a mouse! Look for the tiny one.'); } };
+  },
+  lmatch(L, p) {
+    const hi = L === 1 ? 3 : 5;
+    if (!p) {
+      const n = rnd(1, hi), others = shuffle([...Array(hi).keys()].map(i => i + 1).filter(x => x !== n && Math.abs(x - n) >= (L === 1 ? 1 : 1)));
+      p = { n, t: rnd(0, THINGS.length - 1), opts: shuffle([n, ...others.slice(0, L === 1 ? 1 : 2)]) };
+    }
+    const [e, pl] = THINGS[p.t], st = objs(p.n, e);
+    const cards = p.opts.map(c => objs(c, e));
+    return { p, kind: 'cards', cards, say: `Find the same number of ${pl}!`, text: 'Find the same amount!', stage: st, answer: String(p.opts.indexOf(p.n)),
+      help: async () => { await countThrough(st.querySelectorAll('.obj')); await say(`Find the one with ${p.n}!`); } };
+  },
+  lmore(L, p) {
+    if (!p) {
+      const hi = L === 1 ? 4 : 6; let a, b;
+      do { a = rnd(1, hi); b = rnd(1, hi); } while (a === b || (L === 1 && Math.abs(a - b) < 2));
+      p = { a, b, t: rnd(0, THINGS.length - 1) };
+    }
+    const { a, b } = p, [e, pl] = THINGS[p.t], cards = [objs(a, e), objs(b, e)];
+    return { p, kind: 'cards', cards, say: `Which side has more ${pl}?`, text: `Which has more?`, stage: stack(el('div', 'listen', '⚖️')), answer: a > b ? '0' : '1',
+      help: async () => {
+        await countThrough(cards[0].querySelectorAll('.obj'));
+        await countThrough(cards[1].querySelectorAll('.obj'));
+        await say(`${Math.max(a, b)} is more!`);
+      } };
+  },
+  lpattern(L, p) {
+    if (!p) {
+      const items = shuffle(PAT.slice()).slice(0, 3);
+      const unit = L === 1 ? [0, 1] : L === 2 ? (Math.random() < .5 ? [0, 0, 1] : [0, 1, 1]) : [0, 1, 2];
+      const shown = unit.length * 2 + rnd(0, unit.length - 1);
+      p = { items: items.map(x => PAT.indexOf(x)), unit, shown };
+    }
+    const it = p.items.map(i => PAT[i]), seq = [];
+    while (seq.length <= p.shown) seq.push(...p.unit);
+    const ansIdx = seq[p.shown];
+    const row = el('div', 'pat'), spans = [];
+    for (let i = 0; i < p.shown; i++) { const s = el('span', '', it[seq[i]][0]); spans.push(s); row.append(s); }
+    row.append(el('span', 'gap', '?'));
+    const used = [...new Set(p.unit)];
+    const opts = p.opts || (p.opts = shuffle(used.slice()));
+    const cards = opts.map(i => el('span', 'sz', it[i][0]));
+    cards.forEach(c => c.style.fontSize = '3.4rem');
+    return { p, kind: 'cards', cards, say: 'What comes next?', text: 'What comes next?', stage: row, answer: String(opts.indexOf(ansIdx)),
+      help: async () => {
+        for (let i = 0; i < spans.length; i++) { spans[i].classList.add('lit'); await say(it[seq[i]][1], 380); }
+        await say(`Next comes ${it[ansIdx][1]}!`);
+      } };
+  },
 };
 
 /* ---------- adaptive engine ---------- */
-const isUnlocked = k => { const n = SKILLS[k].needs; if (!n) return true; const s = state.skills[n[0]]; return s.level >= n[1] || s.mastered; };
-const unlockedList = () => Object.keys(SKILLS).filter(isUnlocked);
+const isUnlocked = k => { const n = SKILLS[k].needs; if (!n) return true; const s = P.skills[n[0]]; return !!s && (s.level >= n[1] || s.mastered); };
+const unlockedList = () => skillsFor(P.track).filter(isUnlocked);
 let recentSkills = [], lastKey = '';
 
 function grade(k, r) {
-  const s = state.skills[k], max = SKILLS[k].levels.length;
+  const s = P.skills[k], max = SKILLS[k].levels.length;
   s.seen++; s.correct += r; s.hist.push(r); if (s.hist.length > 8) s.hist.shift();
   const h = s.hist, last5 = h.slice(-5), last4 = h.slice(-4);
   if (last5.length >= 5 && sum(last5) >= 4) {
@@ -650,15 +920,15 @@ function grade(k, r) {
 }
 
 function chooseSkill() {
-  const list = unlockedList();
-  const tail = recentSkills.slice(-2);
+  const list = unlockedList(), tail = recentSkills.slice(-2);
   const weights = list.map(k => {
-    const s = state.skills[k];
+    const s = P.skills[k];
     if (tail.length === 2 && tail[0] === k && tail[1] === k && list.length > 1) return 0;
     let w = s.mastered ? .6 : 2.5;
-    if (s.seen < 6) w += 2;               // newly opened games show up more
+    if (s.seen < 6) w += 2;                          // newly opened games show up more
+    if (!s.mastered) w *= SKILLS[k].focus || 1;      // skills a grown-up asked us to focus on
     const acc = s.hist.length >= 3 ? sum(s.hist) / s.hist.length : 1;
-    if (acc < .5) w *= .7;                 // struggling: still practise, but mix in wins
+    if (acc < .5) w *= .7;                            // struggling: still practise, but mix in wins
     return w;
   });
   let r = Math.random() * sum(weights);
@@ -667,12 +937,12 @@ function chooseSkill() {
 }
 
 function nextQuestion() {
-  const di = state.review.findIndex(x => x.due <= state.total && isUnlocked(x.skill));
+  const di = P.review.findIndex(x => x.due <= P.total && isUnlocked(x.skill));
   if (di >= 0) {
-    const r = state.review.splice(di, 1)[0];
+    const r = P.review.splice(di, 1)[0];
     try { const q = GEN[r.skill](r.level, r.p); return Object.assign(q, { skill: r.skill, level: r.level, review: true }); } catch (e) {}
   }
-  const k = chooseSkill(), L = state.skills[k].level;
+  const k = chooseSkill(), L = P.skills[k].level;
   let q;
   for (let i = 0; i < 4; i++) { q = GEN[k](L); if (k + JSON.stringify(q.p) !== lastKey) break; }
   return Object.assign(q, { skill: k, level: L });
@@ -685,12 +955,16 @@ function renderQ() {
   $('#ptext').textContent = q.text;
   const st = $('#stage'); st.replaceChildren(); if (q.stage) st.append(q.stage);
   const A = $('#answers'); A.replaceChildren();
-  A.className = 'answers' + (q.kind === 'pick2' ? ' two' : '');
-  if (q.kind === 'pick2') {
-    q.cards.forEach((c, i) => { const b = el('button', 'ans card-ans'); b.append(c); b.dataset.v = i ? 'R' : 'L'; b.setAttribute('aria-label', i ? 'Right side' : 'Left side'); A.append(b); });
+  if (q.kind === 'cards') {
+    A.className = 'answers cards'; A.style.setProperty('--n', q.cards.length);
+    q.cards.forEach((c, i) => { const b = el('button', 'ans card-ans'); b.append(c); b.dataset.v = String(i); b.setAttribute('aria-label', 'Choice ' + (i + 1)); A.append(b); });
   } else {
-    A.style.setProperty('--n', q.choices.length);
-    q.choices.forEach(v => { const b = el('button', 'ans', String(v)); b.dataset.v = String(v); A.append(b); });
+    A.className = 'answers'; A.style.setProperty('--n', q.choices.length);
+    q.choices.forEach(v => {
+      const b = el('button', 'ans', String(v)); b.dataset.v = String(v);
+      if (q.dots && v <= 10) { const m = el('span', 'mini'); for (let i = 0; i < v; i++) m.append(el('i')); b.append(m); }
+      A.append(b);
+    });
   }
 }
 
@@ -713,30 +987,31 @@ async function onAnswer(b) {
     b.classList.add('right');
     document.querySelectorAll('#answers .ans').forEach(x => x.classList.remove('hint'));
     let ev = null;
-    if (!q.graded) { q.graded = true; state.total++; ev = grade(q.skill, 1); }
-    chime(); sayNow(pick(PRAISE));
+    if (!q.graded) { q.graded = true; P.total++; ev = grade(q.skill, 1); }
+    chime();
+    const praise = sayNow(pick(PRAISE[P.track]));
     await sleep(350);
-    state.pad = Math.min(10, state.pad + 1); placeFrog(true); hopSnd();
+    P.pad = Math.min(TRACK[P.track].pond, P.pad + 1); placeFrog(true); hopSnd();
     save();
-    await sleep(700);
+    if (q.teach) { await praise; $('#ptext').textContent = q.teach; await say(q.teach); }
+    else await sleep(700);
     await announce(ev, q.skill, before);
-    if (state.pad >= 10) return party();
+    if (P.pad >= TRACK[P.track].pond) return party();
     await sleep(300);
     ask();
   } else {
     tries++;
     b.classList.add('wrong'); b.disabled = true; boop();
     if (!q.graded) {
-      q.graded = true; state.total++;
-      const ev = grade(q.skill, 0);
-      state.review.push({ skill: q.skill, level: q.level, p: q.p, due: state.total + rnd(3, 5) });
-      if (state.review.length > 6) state.review.shift();
+      q.graded = true; P.total++;
+      grade(q.skill, 0);   // a run of misses quietly eases the level down
+      P.review.push({ skill: q.skill, level: q.level, p: q.p, due: P.total + rnd(3, 5) });
+      if (P.review.length > 6) P.review.shift();
       save();
-      if (ev === 'down') { /* quietly eases off; no announcement */ }
     }
     if (tries > 1) { hint(); return; }
     busy = true;
-    await sayNow(pick(OOPS));
+    await sayNow(pick(OOPS[P.track]));
     try { await q.help(); } catch (e) {}
     hint();
     busy = false;
@@ -746,7 +1021,7 @@ function hint() { const c = [...document.querySelectorAll('#answers .ans')].find
 
 async function announce(ev, k, before) {
   const msgs = [];
-  if (ev === 'up') msgs.push([`Level up! ${SKILLS[k].levels[state.skills[k].level - 1]}`, 'Level up! You are ready for something a little harder.']);
+  if (ev === 'up') msgs.push([`Level up! ${SKILLS[k].levels[P.skills[k].level - 1]}`, 'Level up! You are ready for something a little harder.']);
   if (ev === 'master') msgs.push([`${SKILLS[k].name}: all stars!`, `Wow! You are a ${SKILLS[k].name.toLowerCase()} star!`]);
   unlockedList().filter(x => !before.includes(x)).forEach(x => msgs.push([`New game: ${SKILLS[x].name}!`, `You opened a new game: ${SKILLS[x].name}!`]));
   for (const [t, s] of msgs) { showToast(t); chime(); await sayNow(s); await sleep(300); }
@@ -757,40 +1032,36 @@ function showToast(t) { const e = $('#toast'); e.textContent = t; e.hidden = fal
 /* ---------- pond ---------- */
 let slots = [];
 function buildPond() {
-  const pond = $('#pond'), frog = $('#frog');
+  const pond = $('#pond'), frog = $('#frog'), n = P ? TRACK[P.track].pond : 10, at = P ? P.pad : 0;
   pond.querySelectorAll('.slot').forEach(s => s.remove());
   slots = [];
   const rock = el('div', 'slot rock'); pond.insertBefore(rock, frog); slots.push(rock);
-  for (let i = 1; i <= 10; i++) {
-    const p = el('div', 'slot pad' + (i <= state.pad ? ' done' : '') + (i === 10 ? ' goal' : ''));
-    pond.insertBefore(p, frog); slots.push(p);
-  }
+  for (let i = 1; i <= n; i++) { const p = el('div', 'slot pad' + (i <= at ? ' done' : '') + (i === n ? ' goal' : '')); pond.insertBefore(p, frog); slots.push(p); }
+  pond.style.justifyContent = n < 10 ? 'space-around' : 'space-between';
   placeFrog(false);
 }
 function placeFrog(anim) {
-  const t = slots[state.pad]; if (!t) return;
+  const at = P ? P.pad : 0, t = slots[at]; if (!t) return;
   const frog = $('#frog');
-  if (!anim) { frog.style.transition = 'none'; }
+  if (!anim) frog.style.transition = 'none';
   frog.style.left = (t.offsetLeft + t.offsetWidth / 2) + 'px';
-  slots.forEach((s, i) => s.classList.toggle('done', i > 0 && i <= state.pad));
+  slots.forEach((s, i) => s.classList.toggle('done', i > 0 && i <= at));
   if (anim) { frog.classList.remove('hop'); void frog.offsetWidth; frog.classList.add('hop'); }
   else { void frog.offsetWidth; frog.style.transition = ''; }
 }
 addEventListener('resize', () => placeFrog(false));
 
 /* ---------- party ---------- */
-async function party() {
-  const owned = new Set(state.stickers);
-  const pool = FRIENDS.filter(f => !owned.has(f));
-  const f = pick(pool.length ? pool : FRIENDS);
-  state.stickers.push(f); state.pad = 0; save();
-  $('#partyTitle').textContent = state.name ? `${state.name} crossed the pond!` : 'You crossed the pond!';
+function party() {
+  const owned = new Set(P.stickers), pool = FRIENDS.filter(f => !owned.has(f)), f = pick(pool.length ? pool : FRIENDS);
+  P.stickers.push(f); P.pad = 0; save();
+  $('#partyTitle').textContent = `${P.name} crossed the pond!`;
   $('#newFriend').textContent = f;
-  $('#partyText').textContent = `A new pond friend joined you. That makes ${state.stickers.length}!`;
+  $('#partyText').textContent = `A new pond friend joined you. That makes ${P.stickers.length}!`;
   $('#party').hidden = false;
   confetti();
   tone(523, .2, 'triangle'); tone(659, .2, 'triangle', .15); tone(784, .2, 'triangle', .3); tone(1047, .5, 'triangle', .45);
-  sayNow(`Hooray${state.name ? ', ' + state.name : ''}! You crossed the pond and made a new friend!`);
+  sayNow(`Hooray, ${P.name}! You crossed the pond and made a new friend!`);
 }
 $('#again').addEventListener('click', () => { $('#party').hidden = true; buildPond(); ask(); });
 
@@ -809,23 +1080,38 @@ function confetti() {
   })(t0);
 }
 
-/* ---------- screens ---------- */
-function renderStart() {
-  $('#hello').textContent = state.name
-    ? `Hi, ${state.name}! Help Pip the frog hop across the pond. Every right answer is one hop!`
-    : 'Help Pip the frog hop across the pond. Every right answer is one hop!';
-  $('#firstRun').hidden = state.total > 0 || !!state.name;
-  const sh = $('#shelf'); sh.replaceChildren();
-  if (!state.stickers.length) sh.append(el('span', 'empty', 'Cross the pond to meet your first friend.'));
-  else state.stickers.forEach(s => sh.append(el('span', '', s)));
+/* ---------- who's playing ---------- */
+function renderPicker() {
+  const box = $('#players'); box.replaceChildren();
+  $('#whoAsk').textContent = store.players.length ? "Who's playing?" : 'Add a player to start.';
+  $('#firstRun').hidden = store.players.length > 0;
+  store.players.forEach(p => {
+    const b = el('button', 'player'); b.dataset.id = p.id;
+    b.append(el('span', 'av', p.avatar), el('b', '', p.name), el('small', '', `${p.track === 'little' ? 'Little learner' : 'Big kid'} · ${p.stickers.length} pond ${p.stickers.length === 1 ? 'friend' : 'friends'}`));
+    if (p.stickers.length) { const s = el('span', '', p.stickers.slice(-6).join(' ')); s.style.fontSize = '1.3rem'; b.append(s); }
+    box.append(b);
+  });
+  if (!store.players.length) { const a = el('button', 'go', 'Add a player'); a.id = 'firstAdd'; box.append(a); }
 }
-$('#play').addEventListener('click', () => {
-  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {}
-  $('#start').hidden = true; $('#playView').hidden = false; $('#home').hidden = false;
-  placeFrog(false);
-  if (state.name) { sayNow(`Let's go, ${state.name}!`); setTimeout(ask, 1200); } else ask();
+$('#players').addEventListener('click', e => {
+  if (e.target.closest('#firstAdd')) return openGrown('add');
+  const b = e.target.closest('.player'); if (b) startPlay(b.dataset.id);
 });
-$('#home').addEventListener('click', () => { hush(); $('#playView').hidden = true; $('#start').hidden = false; $('#home').hidden = true; renderStart(); placeFrog(false); });
+function startPlay(id) {
+  P = store.players.find(p => p.id === id); if (!P) return;
+  store.current = id; save();
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {}
+  recentSkills = []; lastKey = '';
+  $('#start').hidden = true; $('#playView').hidden = false; $('#home').hidden = false;
+  buildPond();
+  sayNow(`Let's go, ${P.name}!`);
+  setTimeout(ask, 1300);
+}
+$('#home').addEventListener('click', () => {
+  hush(); P = null; q = null;
+  $('#playView').hidden = true; $('#start').hidden = false; $('#home').hidden = true;
+  renderPicker(); buildPond();
+});
 $('#replay').addEventListener('click', () => { if (q) sayNow(q.say); });
 
 /* ---------- grown-ups corner ---------- */
@@ -836,58 +1122,102 @@ gb.addEventListener('pointerdown', e => { e.preventDefault(); gb.classList.add('
 gb.addEventListener('click', e => { if (e.detail === 0) openGrown(); });
 gb.addEventListener('contextmenu', e => e.preventDefault());
 
-function openGrown() { hush(); renderGrown(); $('#confirmRow').hidden = true; $('#resetRow').hidden = false; $('#grown').hidden = false; }
+let gTab = null, addAge = 5, pending = null;
+function openGrown(tab) {
+  hush();
+  gTab = tab || (P && P.id) || (store.players[0] && store.players[0].id) || 'add';
+  $('#voiceOn').checked = store.voice;
+  hideConfirm(); renderGrown();
+  $('#grown').hidden = false;
+}
+function closeGrown() {
+  $('#grown').hidden = true;
+  if ($('#playView').hidden) { renderPicker(); buildPond(); }
+}
+function ageButtons(box, current, onPick) {
+  box.replaceChildren();
+  [3, 4, 5, 6].forEach(a => { const b = el('button', '', String(a)); b.type = 'button'; b.setAttribute('aria-pressed', a === current ? 'true' : 'false'); b.onclick = () => onPick(a); box.append(b); });
+}
 function renderGrown() {
-  $('#kidName').value = state.name; $('#voiceOn').checked = state.voice;
+  const tabs = $('#tabs'); tabs.replaceChildren();
+  store.players.forEach(p => { const t = el('button', 'tab', `${p.avatar} ${p.name}`); t.setAttribute('aria-pressed', gTab === p.id ? 'true' : 'false'); t.onclick = () => { gTab = p.id; hideConfirm(); renderGrown(); }; tabs.append(t); });
+  const add = el('button', 'tab', '+ Add player'); add.setAttribute('aria-pressed', gTab === 'add' ? 'true' : 'false'); add.onclick = () => { gTab = 'add'; hideConfirm(); renderGrown(); }; tabs.append(add);
+
+  const pl = store.players.find(p => p.id === gTab);
+  $('#addPane').hidden = !!pl; $('#playerPane').hidden = !pl;
+  if (!pl) {
+    ageButtons($('#addAges'), addAge, a => { addAge = a; renderGrown(); });
+    $('#addTrack').textContent = `Plays the ${TRACK[trackFor(addAge)].label.toLowerCase()}.`;
+    return;
+  }
+  $('#pName').value = pl.name;
+  ageButtons($('#pAges'), pl.age, a => { pl.age = a; fixPlayer(pl); save(); if (P === pl) buildPond(); renderGrown(); });
+  $('#pTrack').textContent = `Plays the ${TRACK[pl.track].label.toLowerCase()}.`;
+  $('#headRow').hidden = pl.track !== 'big';
   const list = $('#skillList'); list.replaceChildren();
-  for (const k in SKILLS) {
-    const s = state.skills[k], def = SKILLS[k], open = isUnlocked(k);
-    const row = el('div', 'sk');
-    const head = el('div'); head.append(el('b', '', def.name));
+  const unlocked = k => { const n = SKILLS[k].needs; if (!n) return true; const s = pl.skills[n[0]]; return !!s && (s.level >= n[1] || s.mastered); };
+  for (const k of skillsFor(pl.track)) {
+    const s = pl.skills[k], def = SKILLS[k], open = unlocked(k);
+    const row = el('div', 'sk'), head = el('div');
+    head.append(el('b', '', def.name));
     head.append(el('span', 'pill ' + (!open ? 'lock' : s.mastered ? 'done' : 'learn'), !open ? 'Locked' : s.mastered ? 'Mastered' : `Level ${s.level} of ${def.levels.length}`));
+    if (def.focus && !s.mastered) head.append(el('span', 'pill learn', 'Extra practice'));
     const meta = el('div', 'meta');
     if (!open) meta.textContent = `Opens after ${SKILLS[def.needs[0]].name} reaches level ${def.needs[1]}.`;
     else {
       meta.textContent = `${def.levels[s.level - 1]} · ${s.seen ? Math.round(100 * s.correct / s.seen) + '% first try over ' + s.seen : 'not tried yet'}`;
       if (s.hist.length) { const d = el('span', 'dots'); d.setAttribute('aria-label', 'Recent answers'); s.hist.forEach(r => d.append(el('i', r ? 'y' : 'n'))); meta.append(d); }
     }
-    const adj = el('div', 'adj');
-    const dn = el('button', '', '−'), up = el('button', '', '+');
+    const adj = el('div', 'adj'), dn = el('button', '', '−'), up = el('button', '', '+');
     dn.setAttribute('aria-label', `Lower ${def.name} level`); up.setAttribute('aria-label', `Raise ${def.name} level`);
     dn.disabled = s.level <= 1 && !s.mastered; up.disabled = s.level >= def.levels.length && s.mastered;
     dn.onclick = () => { if (s.mastered) s.mastered = false; else s.level--; s.hist = []; save(); renderGrown(); };
     up.onclick = () => { if (s.level < def.levels.length) s.level++; else s.mastered = true; s.hist = []; save(); renderGrown(); };
-    adj.append(dn, up);
-    row.append(head, adj, meta);
-    list.append(row);
+    adj.append(dn, up); row.append(head, adj, meta); list.append(row);
   }
-  $('#totals').textContent = `${state.total} questions answered · ${state.stickers.length} pond${state.stickers.length === 1 ? '' : 's'} crossed.`;
-  $('#syncNote').textContent = cloud ? 'Progress is saved to your Claude account, so it follows you to other devices.' : 'Progress is saved on this iPad. Deleting the app from the home screen erases it.';
+  $('#totals').textContent = `${pl.total} questions answered · ${pl.stickers.length} pond${pl.stickers.length === 1 ? '' : 's'} crossed.`;
 }
-$('#kidName').addEventListener('change', e => { state.name = e.target.value.trim().slice(0, 20); save(); renderStart(); });
-$('#voiceOn').addEventListener('change', e => { state.voice = e.target.checked; if (!state.voice) hush(); save(); });
-$('#closeGrown').addEventListener('click', () => { $('#grown').hidden = true; renderStart(); });
-$('#grown').addEventListener('click', e => { if (e.target.id === 'grown') { $('#grown').hidden = true; renderStart(); } });
+$('#pName').addEventListener('change', e => { const pl = store.players.find(p => p.id === gTab); if (!pl) return; pl.name = e.target.value.trim().slice(0, 20) || pl.name; save(); renderGrown(); });
+$('#addGo').addEventListener('click', () => {
+  const name = $('#addName').value.trim().slice(0, 20);
+  if (!name) { $('#addName').focus(); $('#addTrack').textContent = 'Type a name first.'; return; }
+  const p = newPlayer(name, addAge); store.players.push(p); save();
+  $('#addName').value = ''; gTab = p.id; renderGrown(); showToast(`${name} added!`);
+});
 $('#headStart').addEventListener('click', () => {
-  for (const k in SKILLS) { const sk = state.skills[k]; if (sk.level < (START[k] || 1)) { sk.level = START[k]; sk.hist = []; } }
+  const pl = store.players.find(p => p.id === gTab); if (!pl || pl.track !== 'big') return;
+  for (const k of skillsFor('big')) { const sk = pl.skills[k]; if (sk.level < (START[k] || 1)) { sk.level = START[k]; sk.hist = []; } }
   save(); renderGrown(); showToast('Head start set!');
 });
-$('#resetBtn').addEventListener('click', () => { $('#resetRow').hidden = true; $('#confirmRow').hidden = false; });
-$('#resetNo').addEventListener('click', () => { $('#confirmRow').hidden = true; $('#resetRow').hidden = false; });
-$('#resetYes').addEventListener('click', () => {
-  const keep = { name: state.name, voice: state.voice };
-  state = Object.assign(fresh(), keep); save();
-  buildPond(); renderStart(); renderGrown();
-  $('#confirmRow').hidden = true; $('#resetRow').hidden = false;
-  if (!$('#playView').hidden) ask();
+function confirmAsk(text, fn) { pending = fn; $('#confirmText').textContent = text; $('#confirmRow').hidden = false; $('#playerBtns').hidden = true; }
+function hideConfirm() { pending = null; $('#confirmRow').hidden = true; $('#playerBtns').hidden = false; }
+$('#confirmNo').addEventListener('click', hideConfirm);
+$('#confirmYes').addEventListener('click', () => { const fn = pending; hideConfirm(); if (fn) fn(); });
+$('#resetBtn').addEventListener('click', () => {
+  const pl = store.players.find(p => p.id === gTab); if (!pl) return;
+  confirmAsk(`Erase ${pl.name}'s progress and pond friends?`, () => {
+    Object.assign(pl, { skills: {}, review: [], total: 0, pad: 0, stickers: [] }); fixPlayer(pl); save();
+    if (P === pl) { buildPond(); ask(); }
+    renderGrown();
+  });
 });
+$('#removeBtn').addEventListener('click', () => {
+  const pl = store.players.find(p => p.id === gTab); if (!pl) return;
+  confirmAsk(`Remove ${pl.name} and all of ${pl.name}'s progress?`, () => {
+    store.players = store.players.filter(p => p !== pl); save();
+    if (P === pl) $('#home').click();
+    gTab = (store.players[0] && store.players[0].id) || 'add'; renderGrown();
+  });
+});
+$('#voiceOn').addEventListener('change', e => { store.voice = e.target.checked; if (!store.voice) hush(); save(); });
+$('#closeGrown').addEventListener('click', closeGrown);
+$('#grown').addEventListener('click', e => { if (e.target.id === 'grown') closeGrown(); });
 
-renderStart();
+renderPicker();
 buildPond();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => placeFrog(false));
 })();
 </script>
-
 <script>
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
