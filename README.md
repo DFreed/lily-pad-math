@@ -10,6 +10,10 @@ The game opens on **Who's playing?** Add each child once in the Grown-ups corner
 - **Little learners (ages 3–4):** counting to 3, 5 and 10 (with dot hints on the buttons), finding numbers, shapes, big and small, matching amounts, which has more, and AB / AAB / ABC patterns. A shorter pond (5 pads) so rewards come sooner.
 - **Big kids (ages 5–6):** counting, quick-look dot recognition (subitizing), finding numbers to 100, **tens and ones** (base-ten sticks and cubes, what each digit means, hundreds, 10 more / 10 less), more/fewer, what comes next and counting by 10s, adding and taking away to 20, and making 5 and 10 with ten-frames.
 
+Big kids also get **math facts** that cross ten (8 + 7, ? + 3 = 12, 15 − 7) taught with the "make a ten" strategy on two ten-frames, **story problems** (join, take away, compare, missing part, start unknown, two-step), **number patterns** (counting by 2s/5s/10s, counting down, missing middle, odd numbers, growing patterns) and **brain teasers** (which one doesn't belong, number riddles, secret-symbol equations).
+
+Every child has a **pond friends** book (top bar during play): 20 animals to collect, each with a name that's spoken when tapped.
+
 Tens and ones gets extra practice until it is mastered, and after each right answer Pip says what it means ("3 tens and 2 ones make 32"). Hundreds, tens and ones are always the same colors (pink, green, yellow) in both the blocks and the digits.
 
 ## How it adapts

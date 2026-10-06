@@ -226,6 +226,18 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 
 /* grown-ups tabs */
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
+.fc2.on.g::before{background:var(--pad)}
+.fc2.x{opacity:.22}
+.srow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.srow b{font:800 1.2rem/1 var(--num);min-width:4.5em;text-align:right}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;width:100%}
+.friend{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px 10px;border-radius:18px;background:var(--bg);border:2px solid var(--line)}
+.friend .fe{font-size:2.8rem;line-height:1}
+.friend small{font-size:.74rem;color:var(--muted);text-align:center;line-height:1.2}
+.friend.locked .fe{filter:grayscale(1) brightness(0);opacity:.15}
+.friend.wiggle .fe{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.friend .dup{position:absolute;top:6px;right:8px;font:800 .75rem/1.4 var(--num);background:var(--sun);color:var(--on-sun);border-radius:999px;padding:0 6px}
+#friends .panel{width:min(720px,100%)}
 .tab{border:2px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 14px;font-weight:700}
 .tab[aria-pressed="true"]{background:var(--pad);border-color:var(--pad);color:var(--on-pad)}
 .ages{display:flex;gap:8px;flex-wrap:wrap}
@@ -237,7 +249,7 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 <div id="app">
   <div class="bar">
     <button class="chip" id="home" hidden><span class="t">← Players</span></button>
-    <span></span>
+    <button class="chip" id="friendsBtn" hidden><span class="t">🐢 My friends</span></button>
     <button class="chip" id="grownBtn" aria-label="Grown-ups: press and hold to open"><span class="fill"></span><span class="t">Grown-ups · hold</span></button>
   </div>
 
@@ -271,6 +283,16 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
     <div class="new" id="newFriend"></div>
     <p id="partyText">A new friend joined you.</p>
     <button class="go" id="again">Hop again</button>
+    <button class="btn" id="seeFriends">See all my friends</button>
+  </div>
+</div>
+
+<div class="overlay" id="friends" hidden>
+  <div class="panel party">
+    <h2 id="frTitle">My pond friends</h2>
+    <p id="frCount"></p>
+    <div class="fgrid" id="fgrid"></div>
+    <button class="go" id="frClose">Back to the pond</button>
   </div>
 </div>
 
@@ -340,6 +362,7 @@ $('#frog').innerHTML = FROG; $('#bigFrog').innerHTML = FROG;
 
 const THINGS = [['🍎','apples','apple'],['🐞','ladybugs','ladybug'],['🐟','fish','fish'],['🦆','ducks','duck'],['⭐','stars','star'],['🍓','strawberries','strawberry'],['🐢','turtles','turtle'],['🌼','flowers','flower'],['🐝','bees','bee'],['🦋','butterflies','butterfly'],['🐌','snails','snail'],['🍪','cookies','cookie']];
 const FRIENDS = ['🐢','🦆','🐞','🦋','🐌','🦔','🐝','🦉','🐙','🦀','🐳','🦒','🦁','🐼','🦄','🐧','🦊','🐰','🐨','🦜'];
+const FRIEND_NAMES = { '🐢': 'Toby the Turtle', '🦆': 'Daisy the Duck', '🐞': 'Lulu the Ladybug', '🦋': 'Flutter the Butterfly', '🐌': 'Sid the Snail', '🦔': 'Hazel the Hedgehog', '🐝': 'Buzz the Bee', '🦉': 'Olive the Owl', '🐙': 'Ollie the Octopus', '🦀': 'Clacky the Crab', '🐳': 'Wally the Whale', '🦒': 'Gigi the Giraffe', '🦁': 'Leo the Lion', '🐼': 'Bo the Panda', '🦄': 'Sparkle the Unicorn', '🐧': 'Penny the Penguin', '🦊': 'Finn the Fox', '🐰': 'Rosie the Rabbit', '🐨': 'Koko the Koala', '🦜': 'Polly the Parrot' };
 const AVATARS = ['🐸','🦊','🐻','🐯','🐰','🐼','🦁','🐨','🐶','🐱'];
 const PRAISE = { big: ['Great job!','You got it!','Hop hop hooray!','Super!','That\'s right!','Way to go!','Ribbit! Correct!','Nice thinking!'],
                  little: ['Yay!','Good job!','You did it!','Hooray!','Ribbit! Yes!','Wow!'] };
@@ -357,6 +380,10 @@ const SKILLS = {
   add:     { track: 'big', name: 'Adding', levels: ['Picture sums to 5','Picture sums to 10','Number sums to 10','Missing number','Sums to 20'], needs: ['count', 2] },
   sub:     { track: 'big', name: 'Taking away', levels: ['Picture take-away from 5','Picture take-away from 10','Number take-away from 10','Take-away from 20'], needs: ['add', 2] },
   frame:   { track: 'big', name: 'Making 5 and 10', levels: ['Make 5','Make 10','Make 10, no pictures'], needs: ['add', 2] },
+  facts:   { track: 'big', name: 'Math facts', levels: ['Facts to 10','Cross ten: 8 + 7','Blanks: ? + 3 = 12','Take away across ten','Mixed facts to 20'], needs: ['add', 2] },
+  story:   { track: 'big', name: 'Story problems', levels: ['Join and take away to 10','Compare and missing part','Stories to 20','Tricky stories'], needs: ['add', 2] },
+  bpattern:{ track: 'big', name: 'Patterns', levels: ['Picture patterns','Count by 2s, 5s, 10s','Counting down','Missing middle','Tricky number patterns'], needs: ['numeral', 2] },
+  teaser:  { track: 'big', name: 'Brain teasers', levels: ['Which one does not belong?','Number riddles','Secret symbol','Two secret symbols'], needs: ['count', 2] },
   // Little learner track (ages 3–4)
   lcount:   { track: 'little', name: 'Counting', levels: ['Count to 3','Count to 5','Count to 10'], needs: null },
   lshape:   { track: 'little', name: 'Shapes', levels: ['Circle, square, triangle','Add star and heart','Add rectangle, oval, diamond'], needs: null },
@@ -490,6 +517,14 @@ function frameEl(size, on) {
   const f = el('div', 'frame');
   for (let i = 0; i < size; i++) { const c = el('div', 'fc2'); if (i < on) c.classList.add('on'); f.append(c); }
   return f;
+}
+// One or two ten-frames: a dots in pink, then b in green (the "make a ten" picture).
+function twoFrames(a, b) {
+  const wrap = el('div', 'peek'), f1 = frameEl(10, 0), f2 = frameEl(10, 0);
+  wrap.append(f1); if (a + b > 10) wrap.append(f2);
+  const cells = [...f1.children, ...f2.children];
+  for (let i = 0; i < a + b; i++) { cells[i].classList.add('on'); if (i >= a) cells[i].classList.add('g'); }
+  return { el: wrap, cells };
 }
 function choicesFor(ans, n, lo, hi, extra = []) {
   const out = [ans];
@@ -804,6 +839,233 @@ const GEN = {
       } };
   },
 
+  facts(L, p) {
+    // Number-only facts. Levels 2+ cross ten and teach the "make a ten" strategy.
+    if (!p) {
+      let a, b;
+      if (L === 1) { do { a = rnd(1, 9); b = rnd(1, 9); } while (a + b > 10); }
+      else { do { a = rnd(2, 9); b = rnd(2, 9); } while (a + b <= 10); }
+      const form = L <= 2 ? 'add' : L === 3 ? pick(['blankA', 'blankB']) : L === 4 ? pick(['sub', 'subBlank']) : pick(['add', 'blankA', 'blankB', 'sub', 'subBlank']);
+      p = { a, b, form };
+    }
+    const { a, b, form } = p, c = a + b, cross = c > 10;
+    const F = {
+      add:      { parts: [a, '+', b, '=', '?'], ans: c, say: `What is ${a} plus ${b}?` },
+      blankA:   { parts: ['?', '+', b, '=', c], ans: a, say: `What number plus ${b} makes ${c}?` },
+      blankB:   { parts: [a, '+', '?', '=', c], ans: b, say: `${a} plus what makes ${c}?` },
+      sub:      { parts: [c, '−', b, '=', '?'], ans: a, say: `What is ${c} take away ${b}?` },
+      subBlank: { parts: [c, '−', '?', '=', a], ans: b, say: `${c} take away what leaves ${a}?` },
+    }[form];
+    const st = stack(eq(F.parts));
+    const isSub = form === 'sub' || form === 'subBlank';
+    const early = P && P.skills.facts && P.skills.facts.seen < 15;   // explain the strategy while it is new
+    const teach = !cross || !early ? null : isSub
+      ? `${c} take away ${c - 10} is 10. Take away ${b - (c - 10)} more: ${a}.`
+      : `Make a ten! ${a} and ${10 - a} make 10, and ${b - (10 - a)} more is ${c}.`;
+    return { p, say: F.say, text: F.say, stage: st, answer: F.ans, teach,
+      choices: choicesFor(F.ans, 4, 0, 20, [F.ans + 10, isSub ? c : a + b + 1, F.ans - 10]),
+      help: async () => {
+        const fr = twoFrames(isSub ? c : a, isSub ? 0 : b); st.append(fr.el);
+        const cells = fr.cells;
+        if (isSub) {
+          if (cross) {
+            await say(`Start with ${c}. Take away ${c - 10} to get to 10.`);
+            for (let i = c - 1; i >= 10; i--) { cells[i].classList.add('x'); await sleep(250); }
+            await say(`Then take away ${b - (c - 10)} more.`);
+            for (let i = 9; i >= a; i--) { cells[i].classList.add('x'); await sleep(250); }
+          } else {
+            for (let i = c - 1; i >= a; i--) { cells[i].classList.add('x'); await sleep(250); }
+          }
+          await say(`${a} are left. ${c} take away ${b} is ${a}.`);
+        } else if (cross) {
+          await say(`${a} needs ${10 - a} more to make 10.`);
+          await countThrough(cells.slice(a, 10), a + 1);
+          await say(`10, and ${c - 10} more.`);
+          await countThrough(cells.slice(10, c), 11);
+          await say(`${a} plus ${b} is ${c}.`);
+        } else {
+          await say(`Start at ${a} and count on ${b}.`);
+          await countThrough(cells.slice(a, c), a + 1);
+          await say(`${a} plus ${b} is ${c}.`);
+        }
+        if (form === 'blankA' || form === 'blankB') await say(`The missing number is ${F.ans}.`);
+      } };
+  },
+  story(L, p) {
+    const CH = [['Pip', 'frog', 'he', 'his'], ['Rosie', 'rabbit', 'she', 'her'], ['Toby', 'turtle', 'he', 'his'], ['Lulu', 'ladybug', 'she', 'her'], ['Bo', 'panda', 'he', 'his'], ['Daisy', 'duck', 'she', 'her']];
+    const IT = [['shells', 'shell', '🐚'], ['apples', 'apple', '🍎'], ['stickers', 'sticker', '⭐'], ['cookies', 'cookie', '🍪'], ['flowers', 'flower', '🌼'], ['balloons', 'balloon', '🎈'], ['fish', 'fish', '🐟'], ['strawberries', 'strawberry', '🍓']];
+    if (!p) {
+      const type = pick([['join', 'sep'], ['cmp', 'part'], ['join', 'sep', 'cmp', 'part'], ['start', 'two']][L - 1]);
+      const big = L >= 3; let x, y, z = 0;
+      if (type === 'join')  { if (big) do { x = rnd(4, 9); y = rnd(3, 9); } while (x + y <= 10); else do { x = rnd(1, 7); y = rnd(1, 6); } while (x + y > 10); }
+      if (type === 'sep')   { x = big ? rnd(11, 18) : rnd(3, 10); y = big ? rnd(3, Math.min(9, x - 2)) : rnd(1, x - 1); }
+      if (type === 'cmp')   { x = big ? rnd(11, 18) : rnd(4, 10); y = rnd(big ? 5 : 1, x - 1); }
+      if (type === 'part')  { x = big ? rnd(11, 18) : rnd(4, 10); y = rnd(big ? 3 : 1, x - 1); }
+      if (type === 'start') { x = rnd(2, 9); y = rnd(2, 9); }
+      if (type === 'two')   { x = rnd(3, 9); y = rnd(2, 6); z = rnd(1, Math.min(9, x + y - 1)); }
+      const c1 = rnd(0, CH.length - 1); let c2; do { c2 = rnd(0, CH.length - 1); } while (c2 === c1);
+      p = { type, x, y, z, c1, c2, it: rnd(0, IT.length - 1) };
+    }
+    const { type, x, y, z } = p, [N, , pro, his] = CH[p.c1], M = CH[p.c2][0], [pl, sg, e] = IT[p.it];
+    const Pro = pro[0].toUpperCase() + pro.slice(1), w = n => (n === 1 ? sg : pl);
+    let text, ans, eqParts, build;
+    if (type === 'join') {
+      ans = x + y; text = `${N} has ${x} ${w(x)}. ${Pro} gets ${y} more. How many ${pl} does ${N} have now?`; eqParts = [x, '+', y, '=', ans];
+      build = () => { const d = el('div', 'objs'), A = objs(x, e), B = objs(y, e); d.append(A, el('span', 'plus', '+'), B); return { el: d, nodes: [...d.querySelectorAll('.obj')], start: 1, intro: `${x}, then ${y} more. Count them all.` }; };
+    } else if (type === 'sep') {
+      ans = x - y; text = `${N} has ${x} ${w(x)}. ${Pro} gives ${y} to ${M}. How many ${pl} does ${N} have left?`; eqParts = [x, '−', y, '=', ans];
+      build = () => { const d = objs(x, e, y); return { el: d, nodes: [...d.querySelectorAll('.obj:not(.gone)')], start: 1, intro: `${y} went to ${M}. Count what is left.` }; };
+    } else if (type === 'cmp') {
+      ans = x - y; text = `${N} has ${x} ${w(x)}. ${M} has ${y}. How many more ${pl} does ${N} have than ${M}?`; eqParts = [x, '−', y, '=', ans];
+      build = () => {
+        const d = stack(), r1 = el('div', 'srow'), r2 = el('div', 'srow');
+        r1.append(el('b', '', N), objs(x, e)); r2.append(el('b', '', M), objs(y, e)); d.append(r1, r2);
+        return { el: d, nodes: [...r1.querySelectorAll('.obj')].slice(y), start: 1, intro: `Match them up. Count the extra ones ${N} has.` };
+      };
+    } else if (type === 'part') {
+      ans = x - y; text = `${N} picks ${x} ${w(x)}. ${y} are big and the rest are small. How many are small?`; eqParts = [x, '−', y, '=', ans];
+      build = () => { const d = objs(x, e, y); return { el: d, nodes: [...d.querySelectorAll('.obj:not(.gone)')], start: 1, intro: `Take away the ${y} big ones. Count the small ones.` }; };
+    } else if (type === 'start') {
+      const c = x + y; ans = x; text = `${N} had some ${pl}. ${Pro} found ${y} more. Now ${pro} has ${c}. How many did ${pro} have at the start?`; eqParts = ['?', '+', y, '=', c];
+      build = () => { const d = objs(c, e, y); return { el: d, nodes: [...d.querySelectorAll('.obj:not(.gone)')], start: 1, intro: `Start with ${c}. Take away the ${y} ${pro} found.` }; };
+    } else {
+      ans = x + y - z; text = `${x} frogs sit on a log. ${y} more hop on. Then ${z} hop off. How many frogs are on the log now?`; eqParts = [x, '+', y, '−', z, '=', ans];
+      build = () => { const d = objs(x + y, '🐸', z); return { el: d, nodes: [...d.querySelectorAll('.obj:not(.gone)')], start: 1, intro: `${x} and ${y} more is ${x + y}. ${z} hopped off. Count who is left.` }; };
+    }
+    const pics = L <= 2 ? build() : null;
+    const st = stack(pics ? pics.el : el('div', 'listen', '📖'));
+    const said = eqParts.map(t => t === '+' ? 'plus' : t === '−' ? 'minus' : t === '=' ? 'equals' : t === '?' ? 'what' : t).join(' ');
+    return { p, say: text, text, stage: st, answer: ans, story: true,
+      choices: choicesFor(ans, 4, 0, 25, type === 'join' || type === 'two' ? [ans + 1, x] : [x + y, y]),
+      teach: eqParts.join(' ').replace('?', String(ans)),
+      teachSay: said.replace('what', String(ans)),
+      help: async () => {
+        const b = pics || build();
+        if (!pics) { st.replaceChildren(b.el); await sleep(type === 'join' ? 200 : 1900); }
+        await say(b.intro);
+        await countThrough(b.nodes, b.start);
+        st.append(eq(eqParts));
+        await say(said + '?');
+      } };
+  },
+  bpattern(L, p) {
+    if (L === 1) {
+      if (!p) {
+        const items = shuffle(PAT.slice()).slice(0, 3);
+        const unit = pick([[0, 1, 2], [0, 0, 1, 1], [0, 1, 1], [0, 0, 1], [0, 1, 0, 2]]);
+        p = { items: items.map(x => PAT.indexOf(x)), unit, shown: unit.length * 2 + rnd(0, unit.length - 1) };
+      }
+      const it = p.items.map(i => PAT[i]), seq = [];
+      while (seq.length <= p.shown) seq.push(...p.unit);
+      const row = el('div', 'pat'), spans = [];
+      for (let i = 0; i < p.shown; i++) { const s = el('span', '', it[seq[i]][0]); spans.push(s); row.append(s); }
+      row.append(el('span', 'gap', '?'));
+      const opts = p.opts || (p.opts = shuffle([...new Set(p.unit)]));
+      if (opts.length < 3) opts.push(...[0, 1, 2].filter(i => !opts.includes(i)).slice(0, 3 - opts.length));
+      const cards = opts.map(i => { const c = el('span', 'sz', it[i][0]); c.style.fontSize = '3.2rem'; return c; });
+      const ansIdx = seq[p.shown];
+      return { p, kind: 'cards', cards, say: 'What comes next in the pattern?', text: 'What comes next?', stage: row, answer: String(opts.indexOf(ansIdx)),
+        help: async () => { for (let i = 0; i < spans.length; i++) { spans[i].classList.add('lit'); await say(it[seq[i]][1], 360); } await say(`Next comes ${it[ansIdx][1]}!`); } };
+    }
+    if (!p) {
+      let seq, miss, rule;
+      if (L === 2) { const s = pick([2, 5, 10]); const a = s * rnd(0, 4); seq = [0, 1, 2, 3, 4].map(i => a + s * i); miss = 4; rule = `It counts by ${s}s.`; }
+      else if (L === 3) { const s = pick([1, 2, 10]); const a = s === 10 ? 10 * rnd(6, 10) : s === 2 ? 2 * rnd(7, 10) : rnd(12, 20); seq = [0, 1, 2, 3, 4].map(i => a - s * i); miss = 4; rule = `It goes down by ${s} each time.`; }
+      else if (L === 4) { const s = pick([1, 2, 5, 10]); const a = s * rnd(1, 5); seq = [0, 1, 2, 3, 4].map(i => a + s * i); miss = rnd(1, 3); rule = `It goes up by ${s} each time.`; }
+      else {
+        const kind = pick(['odd', 'grow', 'repeat', 'down5']);
+        if (kind === 'odd') { const a = 2 * rnd(0, 3) + 1; seq = [0, 1, 2, 3, 4].map(i => a + 2 * i); rule = 'These are odd numbers. It skips by 2.'; }
+        if (kind === 'grow') { seq = [1, 2, 4, 7, 11]; const k = rnd(0, 2); seq = seq.map(v => v + k); rule = 'It grows by one more each time: plus 1, plus 2, plus 3, plus 4.'; }
+        if (kind === 'repeat') { const u = shuffle([1, 2, 3, 4, 5]).slice(0, 3); seq = [...u, ...u].slice(0, 5); rule = `It repeats: ${u.join(', ')}.`; }
+        if (kind === 'down5') { const a = 5 * rnd(8, 12); seq = [0, 1, 2, 3, 4].map(i => a - 5 * i); rule = 'It counts down by 5s.'; }
+        miss = 4;
+      }
+      p = { seq, miss, rule };
+    }
+    const { seq, miss } = p, ans = seq[miss], nl = el('div', 'nl'), cells = [];
+    seq.forEach((v, i) => { const c = el('div', i === miss ? 'cell q' : 'cell', i === miss ? '?' : String(v)); cells.push(c); nl.append(c); });
+    const step = seq[1] - seq[0];
+    return { p, say: 'What number is missing?', text: 'What number is missing?', stage: nl, answer: ans,
+      choices: choicesFor(ans, 4, 0, 120, [ans + step, ans - step, ans + 1, ans - 1].filter(v => v !== ans)),
+      teach: L >= 2 && L <= 4 ? p.rule : null,
+      help: async () => {
+        for (let i = 0; i < cells.length; i++) { if (i === miss) continue; cells[i].classList.add('lit'); await say(String(seq[i]), 420); }
+        await say(p.rule);
+        await say(`So the missing number is ${ans}.`);
+      } };
+  },
+  teaser(L, p) {
+    if (L === 1) {
+      const CATS = [['fruit', ['🍎', '🍌', '🍇', '🍓', '🍊', '🍐']], ['animals', ['🐶', '🐱', '🐰', '🐻', '🐷', '🐮']], ['things that go', ['🚗', '🚌', '🚲', '🚂', '🚀', '🚜']], ['sea animals', ['🐟', '🐙', '🐳', '🦀', '🐬', '🦈']]];
+      if (!p) {
+        const [ci, oi] = shuffle([0, 1, 2, 3]).slice(0, 2);
+        const same = shuffle(CATS[ci][1].slice()).slice(0, 3), odd = pick(CATS[oi][1]);
+        const opts = shuffle([...same, odd]);
+        p = { ci, opts, odd: opts.indexOf(odd) };
+      }
+      const cards = p.opts.map(e => { const c = el('span', 'sz', e); c.style.fontSize = '3rem'; return c; });
+      return { p, kind: 'cards', cards, say: 'Which one does not belong?', text: 'Which one does not belong?', stage: stack(el('div', 'listen', '🤔')), answer: String(p.odd),
+        teach: `The others are all ${CATS[p.ci][0]}.`,
+        help: async () => { await say(`Three of these go together. They are all ${CATS[p.ci][0]}. Which one is different?`); } };
+    }
+    if (L === 2) {
+      const R = [
+        () => { const n = rnd(5, 19); return { t: `I come right after ${n}. What number am I?`, a: n + 1 }; },
+        () => { const n = rnd(6, 20); return { t: `I come right before ${n}. What number am I?`, a: n - 1 }; },
+        () => { const n = rnd(3, 14), k = rnd(2, 3); return { t: `I am ${k} more than ${n}. What number am I?`, a: n + k }; },
+        () => { const n = rnd(6, 18), k = rnd(2, 3); return { t: `I am ${k} less than ${n}. What number am I?`, a: n - k }; },
+        () => { const n = rnd(4, 18); return { t: `I am between ${n} and ${n + 2}. What number am I?`, a: n + 1 }; },
+        () => { const o = rnd(1, 9); return { t: `I have 1 ten and ${o} ones. What number am I?`, a: 10 + o }; },
+        () => { const [w, e, per, part] = pick([['ducks', '🦆', 2, 'legs'], ['cats', '🐱', 2, 'eyes'], ['bikes', '🚲', 2, 'wheels'], ['dogs', '🐶', 4, 'legs'], ['cars', '🚗', 4, 'wheels']]); const k = per === 4 ? rnd(2, 3) : rnd(2, 5); return { t: `How many ${part} do ${k} ${w} have?`, a: k * per, pic: [k, e, per] }; },
+      ];
+      if (!p) { const i = rnd(0, R.length - 1), r = R[i](); p = { t: r.t, a: r.a, pic: r.pic || null }; }
+      const st = stack(p.pic ? objs(p.pic[0], p.pic[1]) : el('div', 'listen', '🤔'));
+      return { p, say: p.t, text: p.t, stage: st, answer: p.a,
+        choices: choicesFor(p.a, 4, 0, 30),
+        help: async () => {
+          if (p.pic) {
+            const [k, , per] = p.pic, steps = [];
+            for (let i = 1; i <= k; i++) steps.push(per * i);
+            await say(`Count by ${per}s: ${steps.join(', ')}.`);
+          } else await say(`Let's think. ${p.t.replace(' What number am I?', '')}`);
+          await say(`The answer is ${p.a}.`);
+        } };
+    }
+    const SYM = [['🍎', 'apple'], ['🍌', 'banana'], ['⭐', 'star'], ['🐸', 'frog'], ['🌼', 'flower']];
+    if (L === 3) {
+      if (!p) {
+        const s = rnd(0, SYM.length - 1), kind = pick(['double', 'triple', 'plus']);
+        const a = kind === 'triple' ? rnd(1, 4) : kind === 'double' ? rnd(1, 6) : rnd(1, 9), n = rnd(2, 9);
+        p = { s, kind, a, n };
+      }
+      const [e, nm] = SYM[p.s], { kind, a, n } = p;
+      const parts = kind === 'double' ? [e, '+', e, '=', 2 * a] : kind === 'triple' ? [e, '+', e, '+', e, '=', 3 * a] : [e, '+', n, '=', a + n];
+      const k = kind === 'triple' ? 3 : 2;
+      const words = kind === 'plus' ? `A ${nm} plus ${n} makes ${a + n}. What number is the ${nm}?` : `${k === 2 ? 'Two' : 'Three'} ${nm}s make ${k * a}. What number is one ${nm}?`;
+      const st = stack(eq(parts), eq([e, '=', '?']));
+      return { p, say: words, text: words, stage: st, answer: a,
+        choices: choicesFor(a, 4, 0, 20, [kind === 'plus' ? a + n : k * a]),
+        help: async () => {
+          if (kind === 'plus') {
+            const d = objs(a, '🔵'); st.append(d);
+            await say(`What plus ${n} makes ${a + n}? Count up from ${n}.`);
+            await countThrough([...d.querySelectorAll('.obj')], n + 1);
+          } else {
+            const d = el('div', 'objs'); for (let i = 0; i < k; i++) d.append(objs(a, '🔵')); st.append(d);
+            await say(`Share ${k * a} into ${k} equal groups.`);
+            await countThrough([...d.firstChild.querySelectorAll('.obj')]);
+          }
+          await say(`The ${nm} is ${a}.`);
+        } };
+    }
+    if (!p) { const [s1, s2] = shuffle([0, 1, 2, 3, 4]).slice(0, 2); p = { s1, s2, a: rnd(1, 5), b: rnd(1, 6) }; }
+    const [e1, n1] = SYM[p.s1], [e2, n2] = SYM[p.s2], { a, b } = p;
+    const words = `Two ${n1}s make ${2 * a}. A ${n1} and a ${n2} make ${a + b}. What number is the ${n2}?`;
+    return { p, say: words, text: words, stage: stack(eq([e1, '+', e1, '=', 2 * a]), eq([e1, '+', e2, '=', a + b]), eq([e2, '=', '?'])), answer: b,
+      choices: choicesFor(b, 4, 0, 20, [a, a + b]),
+      help: async () => { await say(`First find the ${n1}. Two ${n1}s make ${2 * a}, so one ${n1} is ${a}. Then ${a} plus what makes ${a + b}? ${b}!`); } };
+  },
+
   /* ===== little learner track ===== */
   lcount(L, p) {
     const hi = [3, 5, 10][L - 1];
@@ -993,7 +1255,7 @@ async function onAnswer(b) {
     await sleep(350);
     P.pad = Math.min(TRACK[P.track].pond, P.pad + 1); placeFrog(true); hopSnd();
     save();
-    if (q.teach) { await praise; $('#ptext').textContent = q.teach; await say(q.teach); }
+    if (q.teach) { await praise; $('#ptext').textContent = q.teach; await say(q.teachSay || q.teach); }
     else await sleep(700);
     await announce(ev, q.skill, before);
     if (P.pad >= TRACK[P.track].pond) return party();
@@ -1064,6 +1326,38 @@ function party() {
   sayNow(`Hooray, ${P.name}! You crossed the pond and made a new friend!`);
 }
 $('#again').addEventListener('click', () => { $('#party').hidden = true; buildPond(); ask(); });
+$('#seeFriends').addEventListener('click', () => { $('#party').hidden = true; openFriends(true); });
+
+/* ---------- pond friends book ---------- */
+let friendsResume = false;
+function openFriends(resume) {
+  if (!P) return;
+  hush(); friendsResume = !!resume;
+  const have = {}; P.stickers.forEach(f => have[f] = (have[f] || 0) + 1);
+  const found = Object.keys(have).length;
+  $('#frTitle').textContent = `${P.name}'s pond friends`;
+  $('#frCount').textContent = found ? `${found} of ${FRIENDS.length} friends found. Tap a friend to say hi!` : 'Cross the pond to find your first friend!';
+  const g = $('#fgrid'); g.replaceChildren();
+  FRIENDS.forEach(f => {
+    const b = el('button', 'friend' + (have[f] ? '' : ' locked'));
+    b.append(el('span', 'fe', f), el('small', '', have[f] ? FRIEND_NAMES[f] : '???'));
+    if (have[f] > 1) b.append(el('span', 'dup', '×' + have[f]));
+    b.onclick = () => {
+      b.classList.remove('wiggle'); void b.offsetWidth; b.classList.add('wiggle');
+      if (have[f]) { tone(660, .15, 'triangle'); sayNow(`Hi! I'm ${FRIEND_NAMES[f]}!`); }
+      else sayNow('Keep crossing the pond to find this friend!');
+    };
+    g.append(b);
+  });
+  $('#friends').hidden = false;
+  sayNow(found ? `You have ${found} pond ${found === 1 ? 'friend' : 'friends'}!` : 'Cross the pond to find your first friend!');
+}
+$('#friendsBtn').addEventListener('click', () => openFriends(false));
+$('#frClose').addEventListener('click', () => {
+  hush(); $('#friends').hidden = true;
+  if (friendsResume) { friendsResume = false; buildPond(); ask(); }
+  else if (q) sayNow(q.say);
+});
 
 function confetti() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1102,14 +1396,14 @@ function startPlay(id) {
   store.current = id; save();
   try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {}
   recentSkills = []; lastKey = '';
-  $('#start').hidden = true; $('#playView').hidden = false; $('#home').hidden = false;
+  $('#start').hidden = true; $('#playView').hidden = false; $('#home').hidden = false; $('#friendsBtn').hidden = false;
   buildPond();
   sayNow(`Let's go, ${P.name}!`);
   setTimeout(ask, 1300);
 }
 $('#home').addEventListener('click', () => {
   hush(); P = null; q = null;
-  $('#playView').hidden = true; $('#start').hidden = false; $('#home').hidden = true;
+  $('#playView').hidden = true; $('#start').hidden = false; $('#home').hidden = true; $('#friendsBtn').hidden = true;
   renderPicker(); buildPond();
 });
 $('#replay').addEventListener('click', () => { if (q) sayNow(q.say); });
