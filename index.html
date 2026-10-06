@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lily Pad Math</title>
+<meta name="description" content="A talking kindergarten math game that adjusts to your child as they play.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lily Pad">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#b9e0dc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16384a" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: one-screen pond game. Lily-pad progress strip on top, question in the middle, big answer buttons at the thumb line. */
+:root{
+  --bg:#e6f2ec; --water:#b9e0dc; --water-soft:#d9efea; --pad:#4f9e4c; --pad-done:#86c46f; --rock:#a89a86;
+  --frog:#3d9a3a; --eye:#ffffff; --pupil:#16302a;
+  --card:#ffffff; --line:#c3dcd4; --ink:#17332e; --muted:#567670;
+  --sun:#ffb51f; --on-sun:#3a2600; --berry:#de4f74; --berry-soft:#f8d9e1; --on-pad:#ffffff; --scrim:rgba(18,48,42,.45); --sun-deep:#b77c00; --pad-deep:#2f6b2d; --sun-glow:rgba(255,181,31,.55); --sun-tint:rgba(255,181,31,.3);
+  --num:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --read:"Andika","Comic Sans MS","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1f2b; --water:#16384a; --water-soft:#1c3f50; --pad:#3f8c4a; --pad-done:#5fae5c; --rock:#6c6253;
+  --frog:#6cc56a; --eye:#f4fbf6; --pupil:#0b1a16;
+  --card:#183242; --line:#2b4d5e; --ink:#e7f4ef; --muted:#9dbdb5;
+  --sun:#ffc63d; --on-sun:#2e1f00; --berry:#ff7d9c; --berry-soft:#4a2635; --on-pad:#ffffff; --scrim:rgba(0,0,0,.6); --sun-deep:#a57700; --pad-deep:#24572b; --sun-glow:rgba(255,198,61,.5); --sun-tint:rgba(255,198,61,.28);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1f2b; --water:#16384a; --water-soft:#1c3f50; --pad:#3f8c4a; --pad-done:#5fae5c; --rock:#6c6253;
+  --frog:#6cc56a; --eye:#f4fbf6; --pupil:#0b1a16;
+  --card:#183242; --line:#2b4d5e; --ink:#e7f4ef; --muted:#9dbdb5;
+  --sun:#ffc63d; --on-sun:#2e1f00; --berry:#ff7d9c; --berry-soft:#4a2635; --on-pad:#ffffff; --scrim:rgba(0,0,0,.6); --sun-deep:#a57700; --pad-deep:#24572b; --sun-glow:rgba(255,198,61,.5); --sun-tint:rgba(255,198,61,.28);
+  color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
+html,body{height:100%;margin:0}
+body{-webkit-text-size-adjust:100%;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+button{touch-action:manipulation;-webkit-touch-callout:none}
+input{-webkit-user-select:text;user-select:text}
+img{max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--read);font-size:18px;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+#app{max-width:760px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px));padding-block:10px 20px;min-height:100%;display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
+
+/* top bar */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-size:.8rem;font-weight:700;color:var(--muted);position:relative;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+.chip .fill{position:absolute;inset:0;background:var(--sun);transform:scaleX(0);transform-origin:left;opacity:.45}
+.chip.holding .fill{transform:scaleX(1);transition:transform 1.2s linear}
+.chip span.t{position:relative}
+
+/* pond strip */
+.pond{position:relative;display:flex;align-items:center;justify-content:space-between;background:var(--water);border-radius:22px;padding:30px 10px 10px;gap:4px}
+.slot{flex:0 0 auto;width:clamp(20px,6.4vw,46px);aspect-ratio:1;border-radius:50%}
+.slot.rock{background:var(--rock);border-radius:42% 48% 40% 50%}
+.slot.pad{background:conic-gradient(from 20deg,var(--water) 0 26deg,var(--pad) 26deg 360deg)}
+.slot.pad.done{background:conic-gradient(from 20deg,var(--water) 0 26deg,var(--pad-done) 26deg 360deg)}
+.slot.goal{position:relative}
+.slot.goal::after{content:"🌸";position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(.7rem,2.6vw,1.3rem)}
+.frog{position:absolute;bottom:14px;width:clamp(34px,8.5vw,56px);transform:translateX(-50%);transition:left .5s cubic-bezier(.3,.7,.4,1);pointer-events:none}
+.frog svg{display:block;width:100%}
+.frog.hop svg{animation:jump .5s ease-out}
+@keyframes jump{0%{transform:translateY(0) scale(1,1)}15%{transform:translateY(2px) scale(1.1,.85)}50%{transform:translateY(-26px) scale(.95,1.08)}85%{transform:translateY(0) scale(1.08,.9)}100%{transform:none}}
+.fb{fill:var(--frog)} .fe{fill:var(--eye)} .fp{fill:var(--pupil)} .fm{fill:none;stroke:var(--pupil);stroke-width:3;stroke-linecap:round} .fc{fill:var(--berry);opacity:.45}
+
+/* start screen */
+.start{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding-block:10px}
+.start .big-frog{width:min(160px,40vw)}
+.start .big-frog svg{width:100%;display:block;animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.start h1{font:800 clamp(2.4rem,9vw,3.6rem)/1 var(--num);margin:0;text-wrap:balance}
+.start p{margin:0;color:var(--muted);max-width:30ch;text-wrap:balance}
+.go{font:800 1.9rem/1 var(--num);background:var(--sun);color:var(--on-sun);border:0;border-radius:999px;padding:18px 54px;box-shadow:0 7px 0 var(--sun-deep)}
+.go:active{transform:translateY(5px);box-shadow:0 2px 0 var(--sun-deep)}
+.tip{font-size:.85rem}
+.shelf{display:flex;flex-direction:column;align-items:center;gap:6px;max-width:100%}
+.shelf h2{font:700 .8rem var(--read);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.stickers{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:2rem;min-height:2.4rem}
+.stickers .empty{font-size:.95rem;color:var(--muted)}
+
+/* play screen */
+.play{flex:1;display:flex;flex-direction:column;gap:14px}
+.prompt{display:flex;align-items:center;gap:12px}
+.ear{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:0;background:var(--sun);color:var(--on-sun);display:grid;place-items:center}
+.ear svg{width:26px;height:26px}
+.prompt p{margin:0;font-size:clamp(1.25rem,4.6vw,1.6rem);font-weight:700;min-width:0;text-wrap:balance}
+.stage{flex:1;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--card);border:3px solid var(--line);border-radius:26px;padding:16px 10px}
+.answers{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:12px}
+.answers.two{grid-template-columns:1fr 1fr}
+.ans{font:800 clamp(2.1rem,9vw,3.3rem)/1 var(--num);padding-block:16px 10px;border-radius:22px;background:var(--card);border:3px solid var(--line);box-shadow:0 6px 0 var(--line);transition:transform .08s}
+.ans:active{transform:translateY(4px);box-shadow:0 2px 0 var(--line)}
+.ans.right{background:var(--pad);border-color:var(--pad);color:var(--on-pad);box-shadow:0 6px 0 var(--pad-deep)}
+.ans.wrong{background:var(--berry-soft);border-color:var(--berry);opacity:.55;animation:shake .4s}
+.ans.hint{animation:glow 1.1s ease-in-out infinite;border-color:var(--sun)}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@keyframes glow{50%{box-shadow:0 0 0 7px var(--sun-glow),0 6px 0 var(--line)}}
+.card-ans{min-height:150px;display:flex;align-items:center;justify-content:center;padding:12px 6px;font-size:clamp(3rem,14vw,4.6rem)}
+
+/* objects in ten-frame rows */
+.objs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:100%}
+.grp{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:16px;background:var(--water-soft)}
+.row{display:flex;gap:2px}
+.obj{position:relative;line-height:1.15;transition:transform .2s;display:inline-block}
+.objs[data-size="l"] .obj{font-size:clamp(2.2rem,9vw,5rem)}
+.objs[data-size="m"] .obj{font-size:clamp(1.8rem,6.8vw,3.8rem)}
+.objs[data-size="s"] .obj{font-size:clamp(1.35rem,5vw,2.8rem)}
+.card-ans .objs .obj{font-size:clamp(1.3rem,5vw,2.8rem)}
+.obj.lit{transform:scale(1.18)}
+.obj[data-n]::after,.fc2[data-n]::after{content:attr(data-n);position:absolute;top:-.35em;right:-.35em;font:800 .42em/1.5 var(--num);background:var(--sun);color:var(--on-sun);border-radius:999px;min-width:1.5em;text-align:center}
+.obj.gone{animation:swim 1s .9s forwards}
+@keyframes swim{to{opacity:.22;filter:grayscale(1);transform:translate(10px,-8px) rotate(-10deg)}}
+.plus{font:800 clamp(2rem,8vw,3rem)/1 var(--num);color:var(--muted);align-self:center}
+.eq{font:800 clamp(2.4rem,11vw,5.5rem)/1 var(--num);letter-spacing:.04em;text-align:center;font-variant-numeric:tabular-nums}
+.eq .q{color:var(--sun)}
+.nl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cell{width:clamp(54px,16vw,110px);aspect-ratio:1;display:grid;place-items:center;border-radius:18px;background:var(--water-soft);border:3px solid var(--line);font:800 clamp(1.7rem,6.5vw,2.5rem)/1 var(--num);transition:background .2s}
+.cell.q{border-style:dashed;border-color:var(--sun);color:var(--sun)}
+.cell.lit{background:var(--sun);color:var(--on-sun);border-color:var(--sun)}
+.frame{display:grid;grid-template-columns:repeat(5,clamp(42px,12.5vw,84px));gap:6px;padding:8px;background:var(--water-soft);border:3px solid var(--line);border-radius:16px;max-width:100%;box-sizing:border-box}
+.fc2{position:relative;aspect-ratio:1;border-radius:12px;background:var(--card);display:grid;place-items:center}
+.fc2.on::before{content:"";width:68%;height:68%;border-radius:50%;background:var(--berry)}
+.fc2.lit{outline:4px solid var(--sun);outline-offset:-4px}
+.fc2[data-n]::after{top:-.3em;right:-.3em;font-size:.9rem}
+.listen{font:800 clamp(3.5rem,16vw,5rem)/1 var(--num);color:var(--line)}
+.peek{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;max-width:100%}
+.dice{display:grid;grid-template-columns:repeat(3,clamp(26px,8vw,52px));gap:5px;padding:10px;background:var(--water-soft);border:3px solid var(--line);border-radius:18px}
+.dice i{position:relative;aspect-ratio:1;border-radius:50%}
+.dice i.on{background:var(--berry)}
+.dice i[data-n]::after{content:attr(data-n);position:absolute;top:-.5em;right:-.5em;font:800 .8rem/1.5 var(--num);background:var(--sun);color:var(--on-sun);border-radius:999px;min-width:1.5em;text-align:center}
+.dice i.lit{outline:4px solid var(--sun)}
+.peek .frame{grid-template-columns:repeat(5,clamp(30px,8.5vw,46px))}
+.peek.covered .dice i.on,.peek.covered .fc2.on::before{opacity:0;transition:opacity .25s}
+.timer{height:8px;width:min(280px,80%);border-radius:999px;background:var(--water-soft);overflow:hidden}
+.timer b{display:block;height:100%;background:var(--sun);transform-origin:left;animation:drain linear forwards}
+@keyframes drain{to{transform:scaleX(0)}}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:16px;z-index:10}
+.panel{background:var(--card);color:var(--ink);border-radius:26px;padding:24px 20px;width:min(560px,100%);max-height:88vh;overflow:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:14px}
+.party{text-align:center;align-items:center}
+.party h2{font:800 clamp(2rem,8vw,2.8rem)/1.05 var(--num);margin:0;text-wrap:balance}
+.party .new{font-size:5.5rem;line-height:1;animation:pop .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(0) rotate(-30deg)}}
+.party p{margin:0;color:var(--muted)}
+.grown h2{font:800 1.6rem/1.1 var(--num);margin:0}
+.grown h3{font:700 .78rem var(--read);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
+.grown p{margin:0;font-size:.92rem;color:var(--muted);line-height:1.5}
+.field{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.field label{font-size:.95rem;display:flex;gap:8px;align-items:center}
+.field input[type=text]{font:inherit;font-size:1rem;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:12ch}
+.field input[type=checkbox]{width:22px;height:22px;accent-color:var(--pad)}
+.skills{display:flex;flex-direction:column;gap:8px}
+.sk{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--bg)}
+.sk b{font-size:1rem}
+.sk .meta{grid-column:1;font-size:.85rem;color:var(--muted);min-width:0}
+.sk .adj{grid-column:2;grid-row:1 / span 2;display:flex;gap:4px;align-items:center}
+.sk .adj button{width:34px;height:34px;border-radius:10px;border:2px solid var(--line);background:var(--card);font-weight:700}
+.sk .adj button:disabled{opacity:.35;cursor:default}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.pill.lock{background:var(--line);color:var(--muted)}
+.pill.learn{background:var(--sun-tint);color:var(--ink)}
+.pill.done{background:var(--pad);color:var(--on-pad)}
+.dots{display:inline-flex;gap:3px;vertical-align:-1px;margin-left:4px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.y{background:var(--pad)} .dots i.n{background:var(--berry)}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{border:2px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 16px;font-weight:700}
+.btn.primary{background:var(--pad);border-color:var(--pad);color:var(--on-pad)}
+.btn.danger{border-color:var(--berry);color:var(--berry)}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);background:var(--sun);color:var(--on-sun);font:800 1.15rem/1.2 var(--num);padding:10px 20px;border-radius:999px;z-index:12;box-shadow:0 6px 20px rgba(0,0,0,.18);max-width:calc(100% - 32px);text-align:center;animation:drop .4s ease-out}
+@keyframes drop{from{transform:translate(-50%,-30px);opacity:0}}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:11}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="bar">
+    <button class="chip" id="home" hidden><span class="t">← Home</span></button>
+    <span></span>
+    <button class="chip" id="grownBtn" aria-label="Grown-ups: press and hold to open"><span class="fill"></span><span class="t">Grown-ups · hold</span></button>
+  </div>
+
+  <div class="pond" id="pond" aria-label="Pond progress">
+    <div class="frog" id="frog"></div>
+  </div>
+
+  <section class="start" id="start">
+    <div class="big-frog" id="bigFrog"></div>
+    <h1>Lily Pad Math</h1>
+    <p id="hello">Help Pip the frog hop across the pond. Every right answer is one hop!</p>
+    <button class="go" id="play">Play</button>
+    <p class="tip" id="firstRun">Grown-ups: press and hold the button at the top right to add a name and settings.</p>
+    <div class="shelf">
+      <h2>Pond friends</h2>
+      <div class="stickers" id="shelf"></div>
+    </div>
+  </section>
+
+  <section class="play" id="playView" hidden>
+    <div class="prompt">
+      <button class="ear" id="replay" aria-label="Hear the question again">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      </button>
+      <p id="ptext"></p>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="answers" id="answers"></div>
+  </section>
+</div>
+
+<div class="overlay" id="party" hidden>
+  <div class="panel party">
+    <h2 id="partyTitle">You crossed the pond!</h2>
+    <div class="new" id="newFriend"></div>
+    <p id="partyText">A new friend joined you.</p>
+    <button class="go" id="again">Hop again</button>
+  </div>
+</div>
+
+<div class="overlay" id="grown" hidden>
+  <div class="panel grown" role="dialog" aria-labelledby="gTitle">
+    <h2 id="gTitle">Grown-ups corner</h2>
+    <p>The game watches which answers come out right on the first try. Four right out of the last five moves a skill up a level; a run of misses steps it back down. Missed questions come back a few turns later. New games open as earlier skills grow. </p>
+    <h3>Head start</h3>
+    <p>For a child who already counts to 20 and knows numbers to 20: skips the easiest levels. The game still steps back down if it is too hard.</p>
+    <div class="btns"><button class="btn" id="headStart">Give a head start</button></div>
+    <div class="field">
+      <label for="kidName">Player name <input type="text" id="kidName" maxlength="20" autocomplete="off"></label>
+      <label for="voiceOn"><input type="checkbox" id="voiceOn"> Read questions aloud</label>
+    </div>
+    <h3>Skills</h3>
+    <div class="skills" id="skillList"></div>
+    <p id="totals"></p>
+    <p id="syncNote"></p>
+    <div class="btns" id="resetRow">
+      <button class="btn primary" id="closeGrown">Done</button>
+      <button class="btn danger" id="resetBtn">Start over…</button>
+    </div>
+    <div class="btns" id="confirmRow" hidden>
+      <p style="flex-basis:100%">Erase all progress and pond friends?</p>
+      <button class="btn danger" id="resetYes">Yes, erase it</button>
+      <button class="btn" id="resetNo">Keep progress</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sum = a => a.reduce((x, y) => x + y, 0);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+const FROG = '<svg viewBox="0 0 64 56" aria-hidden="true"><ellipse class="fb" cx="32" cy="36" rx="26" ry="18"/><circle class="fb" cx="18" cy="16" r="10"/><circle class="fb" cx="46" cy="16" r="10"/><circle class="fe" cx="18" cy="15" r="6.5"/><circle class="fe" cx="46" cy="15" r="6.5"/><circle class="fp" cx="19.5" cy="16" r="3.2"/><circle class="fp" cx="47.5" cy="16" r="3.2"/><path class="fm" d="M21 37 Q32 47 43 37"/><ellipse class="fc" cx="13" cy="38" rx="4.5" ry="2.8"/><ellipse class="fc" cx="51" cy="38" rx="4.5" ry="2.8"/></svg>';
+$('#frog').innerHTML = FROG; $('#bigFrog').innerHTML = FROG;
+
+const THINGS = [['🍎','apples','apple'],['🐞','ladybugs','ladybug'],['🐟','fish','fish'],['🦆','ducks','duck'],['⭐','stars','star'],['🍓','strawberries','strawberry'],['🐢','turtles','turtle'],['🌼','flowers','flower'],['🐝','bees','bee'],['🦋','butterflies','butterfly'],['🐌','snails','snail'],['🍪','cookies','cookie']];
+const FRIENDS = ['🐢','🦆','🐞','🦋','🐌','🦔','🐝','🦉','🐙','🦀','🐳','🦒','🦁','🐼','🦄','🐧','🦊','🐰','🐨','🦜'];
+const PRAISE = ['Great job!','You got it!','Hop hop hooray!','Super!','That\'s right!','Way to go!','Ribbit! Correct!','Nice thinking!'];
+const OOPS = ['Good try! Let\'s figure it out together.','Almost! Let\'s look again.','Hmm, let\'s count it together.'];
+
+const SKILLS = {
+  count:   { name: 'Counting', levels: ['Count to 5','Count to 10','Count 6 to 15','Count to 20'], needs: null },
+  flash:   { name: 'Quick look', levels: ['Dice dots','Ten-frame dots','Two groups to 10','Two groups to 20'], needs: null },
+  numeral: { name: 'Finding numbers', levels: ['Numbers 1–5','Numbers 1–10','Teen numbers','Numbers to 30','Numbers to 100'], needs: null },
+  compare: { name: 'More or fewer', levels: ['More, groups to 5','More, groups to 10','Bigger number to 10','Bigger or smaller to 20'], needs: ['count', 2] },
+  next:    { name: 'What comes next', levels: ['After, to 10','After, to 20','Before, to 20','After, to 50','Count by 10s'], needs: ['numeral', 2] },
+  add:     { name: 'Adding', levels: ['Picture sums to 5','Picture sums to 10','Number sums to 10','Missing number','Sums to 20'], needs: ['count', 2] },
+  sub:     { name: 'Taking away', levels: ['Picture take-away from 5','Picture take-away from 10','Number take-away from 10','Take-away from 20'], needs: ['add', 2] },
+  frame:   { name: 'Making 5 and 10', levels: ['Make 5','Make 10','Make 10, no pictures'], needs: ['add', 2] },
+};
+
+/* ---------- state ---------- */
+const KEY = 'lilypad-math-v1';
+// "Head start" levels for a kindergartner who already counts and names numbers to 20.
+// Applied only when a grown-up taps Head start; the engine moves each skill up or down from there.
+const START = { count: 3, flash: 2, numeral: 3, compare: 3, next: 2, add: 2, sub: 1, frame: 1 };
+function fresh() {
+  const skills = {};
+  for (const k in SKILLS) skills[k] = { level: 1, hist: [], seen: 0, correct: 0, mastered: false };
+  return { v: 1, name: '', voice: true, skills, review: [], total: 0, pad: 0, stickers: [], updated: 0 };
+}
+function normalize(s) {
+  const f = fresh();
+  if (!s || typeof s !== 'object') return f;
+  const out = Object.assign(f, s);
+  out.skills = Object.assign(fresh().skills, s.skills || {});
+  for (const k in SKILLS) {
+    const sk = out.skills[k] = Object.assign({ level: 1, hist: [], seen: 0, correct: 0, mastered: false }, out.skills[k]);
+    sk.level = Math.min(Math.max(1, sk.level), SKILLS[k].levels.length);
+  }
+  if (!Array.isArray(out.review)) out.review = [];
+  if (!Array.isArray(out.stickers)) out.stickers = [];
+  return out;
+}
+let state = fresh();
+try { state = normalize(JSON.parse(localStorage.getItem(KEY))); } catch (e) {}
+
+function save() {
+  state.updated = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  scheduleCloud();
+}
+
+/* cloud sync (signed-in viewers): keeps progress across devices */
+let cloud = null, cloudBusy = false, cloudDirty = false, cloudTimer = 0;
+function scheduleCloud() { if (!cloud) return; clearTimeout(cloudTimer); cloudTimer = setTimeout(flushCloud, 2000); }
+async function flushCloud() {
+  if (!cloud) return;
+  if (cloudBusy) { cloudDirty = true; return; }
+  cloudBusy = true;
+  try { await cloud.set({ json: JSON.stringify(state), total: state.total, updated: state.updated }); } catch (e) {}
+  cloudBusy = false;
+  if (cloudDirty) { cloudDirty = false; scheduleCloud(); }
+}
+(async () => {
+  try {
+    if (!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    const ref = db.doc('data/users/' + id + '/progress');
+    const snap = await ref.get();
+    if (snap.exists) {
+      const d = snap.data();
+      if (d && typeof d.json === 'string' && (d.total || 0) > state.total && $('#playView').hidden) {
+        state = normalize(JSON.parse(d.json));
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+        renderStart(); buildPond();
+      }
+    }
+    cloud = ref;
+    if (state.total > 0) scheduleCloud();
+  } catch (e) {}
+})();
+
+/* ---------- sound + speech ---------- */
+let ac = null;
+function tone(f, dur, type = 'sine', when = 0, vol = .18) {
+  if (!ac) return;
+  const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .05);
+}
+const chime = () => { tone(523, .25, 'triangle'); tone(659, .25, 'triangle', .1); tone(784, .4, 'triangle', .2); };
+const boop = () => { tone(220, .25, 'sine', 0, .14); tone(196, .3, 'sine', .12, .12); };
+const hopSnd = () => { if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(900, t + .18); g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + .25); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .3); };
+
+let voice = null;
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+    voice = vs.find(v => /samantha|karen|google us english|aria|jenny/i.test(v.name)) || vs.find(v => /en-US/i.test(v.lang)) || vs[0] || null;
+  } catch (e) {}
+}
+try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
+const canSpeak = () => state.voice && 'speechSynthesis' in window;
+function say(text, minMs = 0) {
+  return new Promise(resolve => {
+    let done = false; const fin = () => { if (!done) { done = true; resolve(); } };
+    const fallback = Math.max(minMs, canSpeak() ? 900 + text.length * 75 : 350 + text.length * 30);
+    const start = Date.now();
+    if (canSpeak()) {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = .9; u.pitch = 1.12; if (voice) u.voice = voice;
+        u.onend = () => { const left = minMs - (Date.now() - start); left > 0 ? setTimeout(fin, left) : fin(); };
+        u.onerror = fin;
+        speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+    setTimeout(fin, fallback);
+  });
+}
+function hush() { try { speechSynthesis.cancel(); } catch (e) {} }
+function sayNow(t) { hush(); return say(t); }
+
+async function countThrough(nodes, start = 1) {
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    n.classList.add('lit'); n.dataset.n = start + i;
+    tone(440 + (i % 10) * 40, .12, 'sine', 0, .06);
+    await say(String(start + i), 520);
+  }
+}
+
+/* ---------- visuals ---------- */
+function objs(n, e, gone = 0) {
+  const wrap = el('div', 'objs'); let made = 0;
+  for (let g = 0; g < Math.ceil(n / 10); g++) {
+    const grp = el('div', 'grp');
+    for (let r = 0; r < 2; r++) {
+      const row = el('div', 'row');
+      for (let c = 0; c < 5 && made < n; c++) {
+        const s = el('span', 'obj', e);
+        if (made >= n - gone) s.classList.add('gone');
+        row.append(s); made++;
+      }
+      if (row.children.length) grp.append(row);
+    }
+    wrap.append(grp);
+  }
+  wrap.dataset.size = n <= 5 ? 'l' : n <= 10 ? 'm' : 's';
+  return wrap;
+}
+function eq(parts) { const d = el('div', 'eq'); parts.forEach(p => { const s = el('span', p === '?' ? 'q' : '', String(p)); d.append(s, ' '); }); return d; }
+function stack(...kids) { const d = el('div'); d.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:14px;max-width:100%'; d.append(...kids.filter(Boolean)); return d; }
+function frameEl(size, on) {
+  const f = el('div', 'frame');
+  for (let i = 0; i < size; i++) { const c = el('div', 'fc2'); if (i < on) c.classList.add('on'); f.append(c); }
+  return f;
+}
+function choicesFor(ans, n, lo, hi, extra = []) {
+  const out = [ans];
+  const cands = [...shuffle(extra.slice()), ...shuffle([ans - 1, ans + 1, ans - 2, ans + 2]), ...shuffle([ans - 3, ans + 3, ans + 4, ans - 4])];
+  for (const c of cands) { if (out.length >= n) break; if (c >= lo && c <= hi && !out.includes(c)) out.push(c); }
+  for (let c = lo; out.length < n && c <= hi + 10; c++) if (!out.includes(c)) out.push(c);
+  return out.sort((a, b) => a - b);
+}
+
+/* ---------- question generators ---------- */
+const GEN = {
+  count(L, p) {
+    const R = [[1, 5], [1, 10], [6, 15], [10, 20]][L - 1];
+    p = p || { n: rnd(...R), t: rnd(0, THINGS.length - 1) };
+    const [e, pl, sg] = THINGS[p.t], st = objs(p.n, e);
+    return { p, say: `How many ${pl}?`, text: `How many ${pl}?`, stage: st, answer: p.n,
+      choices: choicesFor(p.n, L === 1 ? 3 : 4, 1, R[1] + 2),
+      help: async () => { await countThrough(st.querySelectorAll('.obj')); await say(`There ${p.n === 1 ? 'is' : 'are'} ${p.n} ${p.n === 1 ? sg : pl}!`); } };
+  },
+  flash(L, p) {
+    // Quick look: dots show for a moment, then hide. Builds "see it, know it" without counting one by one.
+    if (!p) {
+      if (L === 1) p = { a: rnd(1, 6), b: 0 };
+      else if (L === 2) p = { a: rnd(2, 10), b: 0 };
+      else if (L === 3) { const a = rnd(1, 6); p = { a, b: rnd(1, Math.min(6, 10 - a)) }; }
+      else p = { a: rnd(5, 10), b: rnd(3, 10) };
+    }
+    const { a, b } = p, total = a + b;
+    const DICE = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    const dice = n => { const d = el('div', 'dice'); for (let i = 0; i < 9; i++) d.append(el('i', DICE[n].includes(i) ? 'on' : '')); return d; };
+    const grp = n => (L === 1 || L === 3) ? dice(n) : frameEl(10, n);
+    const peek = el('div', 'peek'), parts = [grp(a)];
+    if (b) parts.push(el('span', 'plus', '+'), grp(b));
+    peek.append(...parts);
+    const ms = [1800, 2200, 2600, 3000][L - 1];
+    const bar = el('div', 'timer'), fill = el('b'); fill.style.animationDuration = ms + 'ms'; bar.append(fill);
+    const st = stack(peek, bar);
+    const t = b ? 'How many dots in all? Look fast!' : 'How many dots? Look fast!';
+    const dots = () => [...peek.querySelectorAll('.dice i.on, .fc2.on')];
+    return { p, say: t, text: t, stage: st, answer: total,
+      choices: choicesFor(total, L === 1 ? 3 : 4, 1, 22),
+      onShow: () => setTimeout(() => { if (!peek.dataset.open) peek.classList.add('covered'); }, ms),
+      help: async () => {
+        peek.dataset.open = '1'; peek.classList.remove('covered'); bar.hidden = true;
+        if (b && L === 4) {
+          await say(`${a}, then count on.`);
+          await countThrough(dots().slice(a), a + 1);
+        } else {
+          await countThrough(dots());
+        }
+        await say(b ? `${a} and ${b} make ${total}!` : `${total} dots!`);
+      } };
+  },
+  numeral(L, p) {
+    const R = [[1, 5], [1, 10], [10, 20], [10, 30], [20, 99]][L - 1];
+    p = p || { n: rnd(...R) };
+    const n = p.n, extra = [];
+    if (n >= 10) { const rev = (n % 10) * 10 + Math.floor(n / 10); if (rev !== n && n % 10) extra.push(rev); extra.push(n + 10, n - 10); }
+    const st = stack(el('div', 'listen', '?'));
+    return { p, say: `Find the number ${n}.`, text: 'Tap the number you hear.', stage: st, answer: n,
+      choices: choicesFor(n, L === 1 ? 3 : 4, 0, 110, extra),
+      help: async () => {
+        if (n > 20) {
+          const tens = Math.floor(n / 10), ones = n % 10;
+          st.replaceChildren(eq([n]));
+          await say(`${n} has ${tens} tens${ones ? ' and ' + ones + ' ones' : ''}. It starts with ${tens}.`);
+          await say(`Find ${n}.`);
+          return;
+        }
+        const dots = objs(n, '🔵'); st.replaceChildren(dots);
+        if (n > 10) { await say(`${n} is ten and ${n - 10} more.`); }
+        else if (n === 10) { await say('Ten is a full frame.'); }
+        else { await countThrough(dots.querySelectorAll('.obj')); }
+        await say(`Find ${n}.`);
+      } };
+  },
+  compare(L, p) {
+    if (!p) {
+      let a, b, hi = L === 1 ? 5 : L === 4 ? 20 : 10;
+      do { a = rnd(1, hi); b = rnd(1, hi); } while (a === b || (L === 1 && Math.abs(a - b) < 2));
+      p = { a, b, t: rnd(0, THINGS.length - 1), less: L === 4 && Math.random() < .45 };
+    }
+    const { a, b } = p, [e, pl] = THINGS[p.t], pics = L <= 2;
+    const winner = p.less ? (a < b ? 'L' : 'R') : (a > b ? 'L' : 'R');
+    const mk = n => pics ? objs(n, e) : el('span', '', String(n));
+    const cards = [mk(a), mk(b)];
+    const q = pics ? `Which side has more ${pl}?` : p.less ? 'Which number is smaller?' : 'Which number is bigger?';
+    return { p, kind: 'pick2', cards, say: q, text: q, stage: stack(el('div', 'listen', pics ? '⚖️' : '?')), answer: winner,
+      help: async () => {
+        const big = Math.max(a, b), small = Math.min(a, b);
+        if (pics) {
+          await countThrough(cards[0].querySelectorAll('.obj'));
+          await countThrough(cards[1].querySelectorAll('.obj'));
+          await say(`${big} is more than ${small}.`);
+        } else {
+          await say(`When we count, ${big} comes after ${small}. So ${big} is bigger, and ${small} is smaller.`);
+        }
+      } };
+  },
+  next(L, p) {
+    const before = L === 3, byTen = L === 5, step = byTen ? 10 : 1;
+    const R = [[1, 9], [1, 19], [2, 20], [10, 49]][L - 1];
+    p = p || { n: byTen ? 10 * rnd(2, 9) : rnd(...R) };
+    const n = p.n, ans = before ? n - 1 : n + step;
+    const nl = el('div', 'nl'), shown = [];
+    if (before) { nl.append(el('div', 'cell q', '?')); for (let i = n; i <= n + 2; i++) { const c = el('div', 'cell', String(i)); shown.push(c); nl.append(c); } }
+    else { for (let i = Math.max(0, n - 2 * step); i <= n; i += step) { const c = el('div', 'cell', String(i)); shown.push(c); nl.append(c); } nl.append(el('div', 'cell q', '?')); }
+    const t = byTen ? `Count by tens. What comes after ${n}?` : before ? `What comes before ${n}?` : `What comes after ${n}?`;
+    return { p, say: t, text: t, stage: nl, answer: ans,
+      choices: choicesFor(ans, L === 1 ? 3 : 4, 0, 110, byTen ? [n + 1, n + 20, n - 10] : L === 4 ? [ans + 10, ans - 10] : []),
+      help: async () => {
+        if (before) {
+          await say(`Let's count backwards.`);
+          for (let i = shown.length - 1; i >= 0; i--) { shown[i].classList.add('lit'); await say(shown[i].textContent, 450); }
+          await say(`Then ${ans}! ${ans} comes before ${n}.`);
+        } else {
+          for (const c of shown) { c.classList.add('lit'); await say(c.textContent, 450); }
+          await say(`Then ${ans}! ${ans} comes after ${n}.`);
+        }
+      } };
+  },
+  add(L, p) {
+    if (!p) {
+      const hi = L === 1 ? 5 : 10; let a, b;
+      if (L === 5) { do { a = rnd(5, 12); b = rnd(2, 9); } while (a + b <= 10 || a + b > 20); }
+      else do { a = rnd(1, hi - 1); b = rnd(1, hi - 1); } while (a + b > hi);
+      p = { a, b, t: rnd(0, THINGS.length - 1) };
+    }
+    const { a, b } = p, [e, pl, sg] = THINGS[p.t];
+    if (L === 5) {
+      const c = a + b, st = stack(eq([a, '+', b, '=', '?']));
+      return { p, say: `What is ${a} plus ${b}?`, text: `What is ${a} + ${b}?`, stage: st, answer: c,
+        choices: choicesFor(c, 4, 1, 22, [c + 10, c - 10]),
+        help: async () => {
+          const more = objs(b, '🟢'); st.append(more);
+          await say(`Start at ${a}, and count on ${b} more.`);
+          await countThrough([...more.querySelectorAll('.obj')], a + 1);
+          await say(`${a} plus ${b} is ${c}!`);
+        } };
+    }
+    if (L === 4) {
+      const c = a + b, ghosts = el('div', 'objs');
+      const st = stack(eq([a, '+', '?', '=', c]));
+      return { p, say: `${a} plus what makes ${c}?`, text: `${a} + ? = ${c}`, stage: st, answer: b,
+        choices: choicesFor(b, 4, 0, 10),
+        help: async () => {
+          const have = objs(a, '🔵'), need = objs(b, '⚪'); ghosts.append(have, need); st.append(ghosts);
+          await say(`We have ${a}. Let's count up to ${c}.`);
+          await countThrough(need.querySelectorAll('.obj'), a + 1);
+          await say(`We counted ${b} more. ${a} plus ${b} makes ${c}.`);
+        } };
+    }
+    const sum2 = a + b;
+    const pics = el('div', 'objs');
+    const ga = objs(a, e), gb = objs(b, e);
+    pics.append(ga, el('span', 'plus', '+'), gb);
+    const st = stack(L <= 2 ? pics : null, eq([a, '+', b, '=', '?']));
+    const t = L <= 2 ? `${a} ${a === 1 ? sg : pl} and ${b} more. How many in all?` : `What is ${a} plus ${b}?`;
+    return { p, say: t, text: L <= 2 ? 'How many in all?' : `What is ${a} + ${b}?`, stage: st, answer: sum2,
+      choices: choicesFor(sum2, L === 1 ? 3 : 4, 1, 12),
+      help: async () => {
+        if (L > 2) st.prepend(pics);
+        await countThrough([...pics.querySelectorAll('.obj')]);
+        await say(`${a} plus ${b} is ${sum2}!`);
+      } };
+  },
+  sub(L, p) {
+    if (!p) {
+      if (L === 4) { const a = rnd(11, 20); p = { a, b: rnd(1, Math.min(10, a - 1)), t: rnd(0, THINGS.length - 1) }; }
+      else { const a = rnd(L === 1 ? 2 : 3, L === 1 ? 5 : 10); p = { a, b: rnd(1, a - 1), t: rnd(0, THINGS.length - 1) }; }
+    }
+    const { a, b } = p, [e, pl, sg] = THINGS[p.t], left = a - b;
+    const pics = objs(a, e, b);
+    const st = stack(L <= 2 ? pics : null, eq([a, '−', b, '=', '?']));
+    const t = L <= 2 ? `${a} ${pl}. ${b} ${b === 1 ? 'goes' : 'go'} away. How many are left?` : `What is ${a} take away ${b}?`;
+    return { p, say: t, text: L <= 2 ? 'How many are left?' : `What is ${a} − ${b}?`, stage: st, answer: left,
+      choices: choicesFor(left, L === 1 ? 3 : 4, 0, 20),
+      help: async () => {
+        if (L > 2) { st.prepend(pics); await sleep(1900); }
+        await say(`${b} went away. Let's count who is left.`);
+        await countThrough([...pics.querySelectorAll('.obj:not(.gone)')]);
+        await say(`${left} ${left === 1 ? sg : pl} left!`);
+      } };
+  },
+  frame(L, p) {
+    const size = L === 1 ? 5 : 10;
+    p = p || { k: rnd(1, size - 1) };
+    const k = p.k, ans = size - k, fr = frameEl(size, k);
+    const st = stack(L <= 2 ? fr : null, L === 3 ? eq([k, '+', '?', '=', 10]) : null);
+    const t = L <= 2 ? `How many more to make ${size}?` : `${k} and what make 10?`;
+    return { p, say: t, text: t, stage: st, answer: ans,
+      choices: choicesFor(ans, L === 1 ? 3 : 4, 0, size),
+      help: async () => {
+        if (L === 3) st.prepend(fr);
+        await say(`Count the empty boxes.`);
+        await countThrough([...fr.querySelectorAll('.fc2:not(.on)')]);
+        await say(`${k} and ${ans} make ${size}!`);
+      } };
+  },
+};
+
+/* ---------- adaptive engine ---------- */
+const isUnlocked = k => { const n = SKILLS[k].needs; if (!n) return true; const s = state.skills[n[0]]; return s.level >= n[1] || s.mastered; };
+const unlockedList = () => Object.keys(SKILLS).filter(isUnlocked);
+let recentSkills = [], lastKey = '';
+
+function grade(k, r) {
+  const s = state.skills[k], max = SKILLS[k].levels.length;
+  s.seen++; s.correct += r; s.hist.push(r); if (s.hist.length > 8) s.hist.shift();
+  const h = s.hist, last5 = h.slice(-5), last4 = h.slice(-4);
+  if (last5.length >= 5 && sum(last5) >= 4) {
+    if (s.level < max) { s.level++; s.hist = []; return 'up'; }
+    if (!s.mastered) { s.mastered = true; s.hist = []; return 'master'; }
+  } else if (last4.length >= 4 && sum(last4) <= 1) {
+    if (s.level > 1) { s.level--; s.hist = []; s.mastered = false; return 'down'; }
+  }
+  return null;
+}
+
+function chooseSkill() {
+  const list = unlockedList();
+  const tail = recentSkills.slice(-2);
+  const weights = list.map(k => {
+    const s = state.skills[k];
+    if (tail.length === 2 && tail[0] === k && tail[1] === k && list.length > 1) return 0;
+    let w = s.mastered ? .6 : 2.5;
+    if (s.seen < 6) w += 2;               // newly opened games show up more
+    const acc = s.hist.length >= 3 ? sum(s.hist) / s.hist.length : 1;
+    if (acc < .5) w *= .7;                 // struggling: still practise, but mix in wins
+    return w;
+  });
+  let r = Math.random() * sum(weights);
+  for (let i = 0; i < list.length; i++) { r -= weights[i]; if (r <= 0) return list[i]; }
+  return list[0];
+}
+
+function nextQuestion() {
+  const di = state.review.findIndex(x => x.due <= state.total && isUnlocked(x.skill));
+  if (di >= 0) {
+    const r = state.review.splice(di, 1)[0];
+    try { const q = GEN[r.skill](r.level, r.p); return Object.assign(q, { skill: r.skill, level: r.level, review: true }); } catch (e) {}
+  }
+  const k = chooseSkill(), L = state.skills[k].level;
+  let q;
+  for (let i = 0; i < 4; i++) { q = GEN[k](L); if (k + JSON.stringify(q.p) !== lastKey) break; }
+  return Object.assign(q, { skill: k, level: L });
+}
+
+/* ---------- play loop ---------- */
+let q = null, tries = 0, busy = false;
+
+function renderQ() {
+  $('#ptext').textContent = q.text;
+  const st = $('#stage'); st.replaceChildren(); if (q.stage) st.append(q.stage);
+  const A = $('#answers'); A.replaceChildren();
+  A.className = 'answers' + (q.kind === 'pick2' ? ' two' : '');
+  if (q.kind === 'pick2') {
+    q.cards.forEach((c, i) => { const b = el('button', 'ans card-ans'); b.append(c); b.dataset.v = i ? 'R' : 'L'; b.setAttribute('aria-label', i ? 'Right side' : 'Left side'); A.append(b); });
+  } else {
+    A.style.setProperty('--n', q.choices.length);
+    q.choices.forEach(v => { const b = el('button', 'ans', String(v)); b.dataset.v = String(v); A.append(b); });
+  }
+}
+
+function ask() {
+  q = nextQuestion(); tries = 0; busy = false; q.graded = false;
+  lastKey = q.skill + JSON.stringify(q.p);
+  recentSkills.push(q.skill); if (recentSkills.length > 5) recentSkills.shift();
+  renderQ();
+  sayNow(q.say);
+  if (q.onShow) q.onShow();
+}
+
+$('#answers').addEventListener('click', e => { const b = e.target.closest('.ans'); if (b && !b.disabled) onAnswer(b); });
+
+async function onAnswer(b) {
+  if (busy) return;
+  const before = unlockedList();
+  if (b.dataset.v === String(q.answer)) {
+    busy = true;
+    b.classList.add('right');
+    document.querySelectorAll('#answers .ans').forEach(x => x.classList.remove('hint'));
+    let ev = null;
+    if (!q.graded) { q.graded = true; state.total++; ev = grade(q.skill, 1); }
+    chime(); sayNow(pick(PRAISE));
+    await sleep(350);
+    state.pad = Math.min(10, state.pad + 1); placeFrog(true); hopSnd();
+    save();
+    await sleep(700);
+    await announce(ev, q.skill, before);
+    if (state.pad >= 10) return party();
+    await sleep(300);
+    ask();
+  } else {
+    tries++;
+    b.classList.add('wrong'); b.disabled = true; boop();
+    if (!q.graded) {
+      q.graded = true; state.total++;
+      const ev = grade(q.skill, 0);
+      state.review.push({ skill: q.skill, level: q.level, p: q.p, due: state.total + rnd(3, 5) });
+      if (state.review.length > 6) state.review.shift();
+      save();
+      if (ev === 'down') { /* quietly eases off; no announcement */ }
+    }
+    if (tries > 1) { hint(); return; }
+    busy = true;
+    await sayNow(pick(OOPS));
+    try { await q.help(); } catch (e) {}
+    hint();
+    busy = false;
+  }
+}
+function hint() { const c = [...document.querySelectorAll('#answers .ans')].find(x => x.dataset.v === String(q.answer)); if (c) c.classList.add('hint'); }
+
+async function announce(ev, k, before) {
+  const msgs = [];
+  if (ev === 'up') msgs.push([`Level up! ${SKILLS[k].levels[state.skills[k].level - 1]}`, 'Level up! You are ready for something a little harder.']);
+  if (ev === 'master') msgs.push([`${SKILLS[k].name}: all stars!`, `Wow! You are a ${SKILLS[k].name.toLowerCase()} star!`]);
+  unlockedList().filter(x => !before.includes(x)).forEach(x => msgs.push([`New game: ${SKILLS[x].name}!`, `You opened a new game: ${SKILLS[x].name}!`]));
+  for (const [t, s] of msgs) { showToast(t); chime(); await sayNow(s); await sleep(300); }
+}
+let toastTimer = 0;
+function showToast(t) { const e = $('#toast'); e.textContent = t; e.hidden = false; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; clearTimeout(toastTimer); toastTimer = setTimeout(() => e.hidden = true, 3200); }
+
+/* ---------- pond ---------- */
+let slots = [];
+function buildPond() {
+  const pond = $('#pond'), frog = $('#frog');
+  pond.querySelectorAll('.slot').forEach(s => s.remove());
+  slots = [];
+  const rock = el('div', 'slot rock'); pond.insertBefore(rock, frog); slots.push(rock);
+  for (let i = 1; i <= 10; i++) {
+    const p = el('div', 'slot pad' + (i <= state.pad ? ' done' : '') + (i === 10 ? ' goal' : ''));
+    pond.insertBefore(p, frog); slots.push(p);
+  }
+  placeFrog(false);
+}
+function placeFrog(anim) {
+  const t = slots[state.pad]; if (!t) return;
+  const frog = $('#frog');
+  if (!anim) { frog.style.transition = 'none'; }
+  frog.style.left = (t.offsetLeft + t.offsetWidth / 2) + 'px';
+  slots.forEach((s, i) => s.classList.toggle('done', i > 0 && i <= state.pad));
+  if (anim) { frog.classList.remove('hop'); void frog.offsetWidth; frog.classList.add('hop'); }
+  else { void frog.offsetWidth; frog.style.transition = ''; }
+}
+addEventListener('resize', () => placeFrog(false));
+
+/* ---------- party ---------- */
+async function party() {
+  const owned = new Set(state.stickers);
+  const pool = FRIENDS.filter(f => !owned.has(f));
+  const f = pick(pool.length ? pool : FRIENDS);
+  state.stickers.push(f); state.pad = 0; save();
+  $('#partyTitle').textContent = state.name ? `${state.name} crossed the pond!` : 'You crossed the pond!';
+  $('#newFriend').textContent = f;
+  $('#partyText').textContent = `A new pond friend joined you. That makes ${state.stickers.length}!`;
+  $('#party').hidden = false;
+  confetti();
+  tone(523, .2, 'triangle'); tone(659, .2, 'triangle', .15); tone(784, .2, 'triangle', .3); tone(1047, .5, 'triangle', .45);
+  sayNow(`Hooray${state.name ? ', ' + state.name : ''}! You crossed the pond and made a new friend!`);
+}
+$('#again').addEventListener('click', () => { $('#party').hidden = true; buildPond(); ask(); });
+
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = $('#confetti'), x = c.getContext('2d'); c.hidden = false;
+  const W = c.width = innerWidth * devicePixelRatio, H = c.height = innerHeight * devicePixelRatio;
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ['--sun', '--berry', '--pad-done', '--water', '--frog'].map(v => cs.getPropertyValue(v).trim());
+  const bits = Array.from({ length: 140 }, () => ({ x: Math.random() * W, y: -Math.random() * H * .5, vx: (Math.random() - .5) * 4, vy: 2 + Math.random() * 5, r: Math.random() * 6, s: (6 + Math.random() * 8) * devicePixelRatio, c: pick(cols) }));
+  const t0 = performance.now();
+  (function f(t) {
+    x.clearRect(0, 0, W, H);
+    bits.forEach(b => { b.x += b.vx; b.y += b.vy * devicePixelRatio; b.r += .1; x.save(); x.translate(b.x, b.y); x.rotate(b.r); x.fillStyle = b.c; x.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2); x.restore(); });
+    if (t - t0 < 3200) requestAnimationFrame(f); else { x.clearRect(0, 0, W, H); c.hidden = true; }
+  })(t0);
+}
+
+/* ---------- screens ---------- */
+function renderStart() {
+  $('#hello').textContent = state.name
+    ? `Hi, ${state.name}! Help Pip the frog hop across the pond. Every right answer is one hop!`
+    : 'Help Pip the frog hop across the pond. Every right answer is one hop!';
+  $('#firstRun').hidden = state.total > 0 || !!state.name;
+  const sh = $('#shelf'); sh.replaceChildren();
+  if (!state.stickers.length) sh.append(el('span', 'empty', 'Cross the pond to meet your first friend.'));
+  else state.stickers.forEach(s => sh.append(el('span', '', s)));
+}
+$('#play').addEventListener('click', () => {
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {}
+  $('#start').hidden = true; $('#playView').hidden = false; $('#home').hidden = false;
+  placeFrog(false);
+  if (state.name) { sayNow(`Let's go, ${state.name}!`); setTimeout(ask, 1200); } else ask();
+});
+$('#home').addEventListener('click', () => { hush(); $('#playView').hidden = true; $('#start').hidden = false; $('#home').hidden = true; renderStart(); placeFrog(false); });
+$('#replay').addEventListener('click', () => { if (q) sayNow(q.say); });
+
+/* ---------- grown-ups corner ---------- */
+const gb = $('#grownBtn'); let holdT = 0;
+const endHold = () => { clearTimeout(holdT); gb.classList.remove('holding'); };
+gb.addEventListener('pointerdown', e => { e.preventDefault(); gb.classList.add('holding'); holdT = setTimeout(() => { endHold(); openGrown(); }, 1200); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(t => gb.addEventListener(t, endHold));
+gb.addEventListener('click', e => { if (e.detail === 0) openGrown(); });
+gb.addEventListener('contextmenu', e => e.preventDefault());
+
+function openGrown() { hush(); renderGrown(); $('#confirmRow').hidden = true; $('#resetRow').hidden = false; $('#grown').hidden = false; }
+function renderGrown() {
+  $('#kidName').value = state.name; $('#voiceOn').checked = state.voice;
+  const list = $('#skillList'); list.replaceChildren();
+  for (const k in SKILLS) {
+    const s = state.skills[k], def = SKILLS[k], open = isUnlocked(k);
+    const row = el('div', 'sk');
+    const head = el('div'); head.append(el('b', '', def.name));
+    head.append(el('span', 'pill ' + (!open ? 'lock' : s.mastered ? 'done' : 'learn'), !open ? 'Locked' : s.mastered ? 'Mastered' : `Level ${s.level} of ${def.levels.length}`));
+    const meta = el('div', 'meta');
+    if (!open) meta.textContent = `Opens after ${SKILLS[def.needs[0]].name} reaches level ${def.needs[1]}.`;
+    else {
+      meta.textContent = `${def.levels[s.level - 1]} · ${s.seen ? Math.round(100 * s.correct / s.seen) + '% first try over ' + s.seen : 'not tried yet'}`;
+      if (s.hist.length) { const d = el('span', 'dots'); d.setAttribute('aria-label', 'Recent answers'); s.hist.forEach(r => d.append(el('i', r ? 'y' : 'n'))); meta.append(d); }
+    }
+    const adj = el('div', 'adj');
+    const dn = el('button', '', '−'), up = el('button', '', '+');
+    dn.setAttribute('aria-label', `Lower ${def.name} level`); up.setAttribute('aria-label', `Raise ${def.name} level`);
+    dn.disabled = s.level <= 1 && !s.mastered; up.disabled = s.level >= def.levels.length && s.mastered;
+    dn.onclick = () => { if (s.mastered) s.mastered = false; else s.level--; s.hist = []; save(); renderGrown(); };
+    up.onclick = () => { if (s.level < def.levels.length) s.level++; else s.mastered = true; s.hist = []; save(); renderGrown(); };
+    adj.append(dn, up);
+    row.append(head, adj, meta);
+    list.append(row);
+  }
+  $('#totals').textContent = `${state.total} questions answered · ${state.stickers.length} pond${state.stickers.length === 1 ? '' : 's'} crossed.`;
+  $('#syncNote').textContent = cloud ? 'Progress is saved to your Claude account, so it follows you to other devices.' : 'Progress is saved on this iPad. Deleting the app from the home screen erases it.';
+}
+$('#kidName').addEventListener('change', e => { state.name = e.target.value.trim().slice(0, 20); save(); renderStart(); });
+$('#voiceOn').addEventListener('change', e => { state.voice = e.target.checked; if (!state.voice) hush(); save(); });
+$('#closeGrown').addEventListener('click', () => { $('#grown').hidden = true; renderStart(); });
+$('#grown').addEventListener('click', e => { if (e.target.id === 'grown') { $('#grown').hidden = true; renderStart(); } });
+$('#headStart').addEventListener('click', () => {
+  for (const k in SKILLS) { const sk = state.skills[k]; if (sk.level < (START[k] || 1)) { sk.level = START[k]; sk.hist = []; } }
+  save(); renderGrown(); showToast('Head start set!');
+});
+$('#resetBtn').addEventListener('click', () => { $('#resetRow').hidden = true; $('#confirmRow').hidden = false; });
+$('#resetNo').addEventListener('click', () => { $('#confirmRow').hidden = true; $('#resetRow').hidden = false; });
+$('#resetYes').addEventListener('click', () => {
+  const keep = { name: state.name, voice: state.voice };
+  state = Object.assign(fresh(), keep); save();
+  buildPond(); renderStart(); renderGrown();
+  $('#confirmRow').hidden = true; $('#resetRow').hidden = false;
+  if (!$('#playView').hidden) ask();
+});
+
+renderStart();
+buildPond();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => placeFrog(false));
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+</script>
+</body>
+</html>
