@@ -12,6 +12,13 @@ The game opens on **Who's playing?** Add each child once in the Grown-ups corner
 
 Big kids also get **math facts** that cross ten (8 + 7, ? + 3 = 12, 15 − 7) taught with the "make a ten" strategy on two ten-frames, **story problems** (join, take away, compare, missing part, start unknown, two-step), **number patterns** (counting by 2s/5s/10s, counting down, missing middle, odd numbers, growing patterns) and **brain teasers** (which one doesn't belong, number riddles, secret-symbol equations).
 
+Stretch skills for big kids who are ready: **bigger numbers** (30 + 20, 34 + 5, 70 − 30, 27 + 8, 23 + 14), **equal groups** (groups, doubles and near doubles, sharing, arrays), **telling time** (o'clock, half past, one hour later) and **coins** (pennies, nickels, dimes).
+
+## Bonus missions
+Big kids pick a game after choosing their name: the regular Lily Pad, or a themed bonus mission (Power Rangers, Paw Patrol or Spidey). Each mission is six themed puzzles (story problems, missing numbers, skip counting, color patterns, equal groups, riddles, secret symbols) ending with a boss puzzle, and earns a badge. Puzzle difficulty follows the child's current levels, and answers count toward the same skills.
+
+Fan-made for one family's kids; not affiliated with or endorsed by the owners of these characters. No logos or artwork are used.
+
 Every child has a **pond friends** book (top bar during play): 20 animals to collect, each with a name that's spoken when tapped.
 
 Tens and ones gets extra practice until it is mastered, and after each right answer Pip says what it means ("3 tens and 2 ones make 32"). Hundreds, tens and ones are always the same colors (pink, green, yellow) in both the blocks and the digits.

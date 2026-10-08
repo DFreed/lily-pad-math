@@ -23,7 +23,7 @@
   --bg:#e6f2ec; --water:#b9e0dc; --water-soft:#d9efea; --pad:#4f9e4c; --pad-done:#86c46f; --rock:#a89a86;
   --frog:#3d9a3a; --eye:#ffffff; --pupil:#16302a;
   --card:#ffffff; --line:#c3dcd4; --ink:#17332e; --muted:#567670;
-  --sun:#ffb51f; --on-sun:#3a2600; --berry:#de4f74; --berry-soft:#f8d9e1; --on-pad:#ffffff; --scrim:rgba(18,48,42,.45); --sun-deep:#b77c00; --pad-deep:#2f6b2d; --sun-glow:rgba(255,181,31,.55); --sun-tint:rgba(255,181,31,.3);
+  --sun:#ffb51f; --on-sun:#3a2600; --berry:#de4f74; --berry-soft:#f8d9e1; --on-pad:#ffffff; --scrim:rgba(18,48,42,.45); --red:#d93636; --blue:#2b6fd6; --sun-deep:#b77c00; --pad-deep:#2f6b2d; --sun-glow:rgba(255,181,31,.55); --sun-tint:rgba(255,181,31,.3);
   --num:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
   --read:"Andika","Comic Sans MS","Segoe UI",system-ui,sans-serif;
 }
@@ -31,13 +31,13 @@
   --bg:#0e1f2b; --water:#16384a; --water-soft:#1c3f50; --pad:#3f8c4a; --pad-done:#5fae5c; --rock:#6c6253;
   --frog:#6cc56a; --eye:#f4fbf6; --pupil:#0b1a16;
   --card:#183242; --line:#2b4d5e; --ink:#e7f4ef; --muted:#9dbdb5;
-  --sun:#ffc63d; --on-sun:#2e1f00; --berry:#ff7d9c; --berry-soft:#4a2635; --on-pad:#ffffff; --scrim:rgba(0,0,0,.6); --sun-deep:#a57700; --pad-deep:#24572b; --sun-glow:rgba(255,198,61,.5); --sun-tint:rgba(255,198,61,.28);
+  --sun:#ffc63d; --on-sun:#2e1f00; --berry:#ff7d9c; --berry-soft:#4a2635; --on-pad:#ffffff; --scrim:rgba(0,0,0,.6); --red:#ff6b6b; --blue:#6aa3ff; --sun-deep:#a57700; --pad-deep:#24572b; --sun-glow:rgba(255,198,61,.5); --sun-tint:rgba(255,198,61,.28);
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1f2b; --water:#16384a; --water-soft:#1c3f50; --pad:#3f8c4a; --pad-done:#5fae5c; --rock:#6c6253;
   --frog:#6cc56a; --eye:#f4fbf6; --pupil:#0b1a16;
   --card:#183242; --line:#2b4d5e; --ink:#e7f4ef; --muted:#9dbdb5;
-  --sun:#ffc63d; --on-sun:#2e1f00; --berry:#ff7d9c; --berry-soft:#4a2635; --on-pad:#ffffff; --scrim:rgba(0,0,0,.6); --sun-deep:#a57700; --pad-deep:#24572b; --sun-glow:rgba(255,198,61,.5); --sun-tint:rgba(255,198,61,.28);
+  --sun:#ffc63d; --on-sun:#2e1f00; --berry:#ff7d9c; --berry-soft:#4a2635; --on-pad:#ffffff; --scrim:rgba(0,0,0,.6); --red:#ff6b6b; --blue:#6aa3ff; --sun-deep:#a57700; --pad-deep:#24572b; --sun-glow:rgba(255,198,61,.5); --sun-tint:rgba(255,198,61,.28);
   color-scheme:dark}
 
 *,*::before,*::after{box-sizing:border-box}
@@ -67,7 +67,7 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 .slot.pad{background:conic-gradient(from 20deg,var(--water) 0 26deg,var(--pad) 26deg 360deg)}
 .slot.pad.done{background:conic-gradient(from 20deg,var(--water) 0 26deg,var(--pad-done) 26deg 360deg)}
 .slot.goal{position:relative}
-.slot.goal::after{content:"🌸";position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(.7rem,2.6vw,1.3rem)}
+.slot.goal::after{content:attr(data-goal);position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(.7rem,2.6vw,1.3rem)}
 .frog{position:absolute;bottom:14px;width:clamp(34px,8.5vw,56px);transform:translateX(-50%);transition:left .5s cubic-bezier(.3,.7,.4,1);pointer-events:none}
 .frog svg{display:block;width:100%}
 .frog.hop svg{animation:jump .5s ease-out}
@@ -109,7 +109,7 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 
 /* objects in ten-frame rows */
 .objs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:100%}
-.grp{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:16px;background:var(--water-soft)}
+.grp{position:relative;display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:16px;background:var(--water-soft)}
 .row{display:flex;gap:2px}
 .obj{position:relative;line-height:1.15;transition:transform .2s;display:inline-block}
 .objs[data-size="l"] .obj{font-size:clamp(2.2rem,9vw,5rem)}
@@ -238,6 +238,29 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 .friend.wiggle .fe{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
 .friend .dup{position:absolute;top:6px;right:8px;font:800 .75rem/1.4 var(--num);background:var(--sun);color:var(--on-sun);border-radius:999px;padding:0 6px}
 #friends .panel{width:min(720px,100%)}
+.frog .hero{display:block;text-align:center;font-size:clamp(1.6rem,6vw,2.6rem);line-height:1}
+.pond.th-rangers,.pond.th-spidey{--tc:var(--red)}
+.pond.th-paw{--tc:var(--blue)}
+.pond.th .slot.pad{background:var(--card);box-shadow:inset 0 0 0 3px var(--tc)}
+.pond.th .slot.pad.done{background:var(--tc)}
+.mode{border-top:8px solid var(--c,var(--pad))}
+.mode.m-rangers{--c:var(--red)} .mode.m-paw{--c:var(--blue)} .mode.m-spidey{--c:var(--red)}
+.mode .av{letter-spacing:-.1em}
+.clock svg{display:block;width:clamp(160px,36vw,280px);height:auto}
+.card-ans .clock svg{width:clamp(90px,22vw,160px)}
+.cf{fill:var(--card);stroke:var(--ink);stroke-width:3}
+.cn{font:800 9px var(--num);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.hh{stroke:var(--berry);stroke-width:5;stroke-linecap:round}
+.mh{stroke:var(--pad);stroke-width:3;stroke-linecap:round}
+.cc{fill:var(--ink)}
+.coins{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center}
+.coin{position:relative;border-radius:50%;display:grid;place-items:center;font:800 clamp(.9rem,2.6vw,1.2rem)/1 var(--num);color:#2b2b2b;box-shadow:inset 0 0 0 3px rgba(0,0,0,.18),0 2px 0 rgba(0,0,0,.2)}
+.coin.c1{width:clamp(48px,11vw,72px);height:clamp(48px,11vw,72px);background:#c98250}
+.coin.c5{width:clamp(56px,12.5vw,82px);height:clamp(56px,12.5vw,82px);background:#b8bdc3}
+.coin.c10{width:clamp(44px,10vw,66px);height:clamp(44px,10vw,66px);background:#dde1e6}
+.coin.lit,.grp.lit,.arow.lit{outline:4px solid var(--sun);outline-offset:2px}
+.arows{display:flex;flex-direction:column;gap:6px;align-items:center}
+.arow{position:relative;display:flex;gap:6px;padding:4px 8px;border-radius:12px;background:var(--water-soft);font-size:clamp(1.6rem,5vw,2.6rem);line-height:1.1}
 .tab{border:2px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 14px;font-weight:700}
 .tab[aria-pressed="true"]{background:var(--pad);border-color:var(--pad);color:var(--on-pad)}
 .ages{display:flex;gap:8px;flex-wrap:wrap}
@@ -263,6 +286,11 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
     <p class="who" id="whoAsk">Who's playing?</p>
     <div class="players" id="players"></div>
     <p class="tip" id="firstRun">Grown-ups: add each child once. Names stay on this device.</p>
+  </section>
+
+  <section class="start" id="modeView" hidden>
+    <p class="who" id="modeAsk">Pick a game</p>
+    <div class="players modes" id="modes"></div>
   </section>
 
   <section class="play" id="playView" hidden>
@@ -383,6 +411,10 @@ const SKILLS = {
   facts:   { track: 'big', name: 'Math facts', levels: ['Facts to 10','Cross ten: 8 + 7','Blanks: ? + 3 = 12','Take away across ten','Mixed facts to 20'], needs: ['add', 2] },
   story:   { track: 'big', name: 'Story problems', levels: ['Join and take away to 10','Compare and missing part','Stories to 20','Tricky stories'], needs: ['add', 2] },
   bpattern:{ track: 'big', name: 'Patterns', levels: ['Picture patterns','Count by 2s, 5s, 10s','Counting down','Missing middle','Tricky number patterns'], needs: ['numeral', 2] },
+  tens:    { track: 'big', name: 'Bigger numbers', levels: ['Add tens: 30 + 20','Add ones: 34 + 5','Take away tens: 70 − 30','Cross a ten: 27 + 8','Two-digit plus two-digit'], needs: ['place', 3] },
+  groups:  { track: 'big', name: 'Equal groups', levels: ['Groups you can see','Doubles and near doubles','Share equally','Rows and columns'], needs: ['add', 3] },
+  clock:   { track: 'big', name: 'Telling time', levels: ["O'clock",'Half past','Which clock shows it?','One hour later'], needs: ['numeral', 3] },
+  money:   { track: 'big', name: 'Coins', levels: ['Pennies','Nickels and pennies','Dimes and pennies','Dimes, nickels and pennies'], needs: ['place', 2] },
   teaser:  { track: 'big', name: 'Brain teasers', levels: ['Which one does not belong?','Number riddles','Secret symbol','Two secret symbols'], needs: ['count', 2] },
   // Little learner track (ages 3–4)
   lcount:   { track: 'little', name: 'Counting', levels: ['Count to 3','Count to 5','Count to 10'], needs: null },
@@ -419,6 +451,7 @@ function fixPlayer(p) {
   }
   if (!Array.isArray(p.review)) p.review = [];
   if (!Array.isArray(p.stickers)) p.stickers = [];
+  if (!p.badges || typeof p.badges !== 'object') p.badges = {};
   p.review = p.review.filter(r => SKILLS[r.skill] && SKILLS[r.skill].track === p.track);
   p.total = p.total || 0;
   p.pad = Math.min(p.pad || 0, TRACK[p.track].pond - 1);
@@ -525,6 +558,14 @@ function twoFrames(a, b) {
   const cells = [...f1.children, ...f2.children];
   for (let i = 0; i < a + b; i++) { cells[i].classList.add('on'); if (i >= a) cells[i].classList.add('g'); }
   return { el: wrap, cells };
+}
+// Analog clock: short pink hour hand, long green minute hand.
+function clockEl(h, m) {
+  const d = el('div', 'clock'), ha = ((h % 12) + m / 60) * Math.PI / 6, ma = m * Math.PI / 30;
+  let nums = '';
+  for (let i = 1; i <= 12; i++) { const a = i * Math.PI / 6; nums += `<text x="${(50 + 37 * Math.sin(a)).toFixed(1)}" y="${(50 - 37 * Math.cos(a)).toFixed(1)}" class="cn">${i}</text>`; }
+  d.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" class="cf"/>${nums}<line x1="50" y1="50" x2="${(50 + 22 * Math.sin(ha)).toFixed(1)}" y2="${(50 - 22 * Math.cos(ha)).toFixed(1)}" class="hh"/><line x1="50" y1="50" x2="${(50 + 33 * Math.sin(ma)).toFixed(1)}" y2="${(50 - 33 * Math.cos(ma)).toFixed(1)}" class="mh"/><circle cx="50" cy="50" r="3.5" class="cc"/></svg>`;
+  return d;
 }
 function choicesFor(ans, n, lo, hi, extra = []) {
   const out = [ans];
@@ -1066,6 +1107,140 @@ const GEN = {
       help: async () => { await say(`First find the ${n1}. Two ${n1}s make ${2 * a}, so one ${n1} is ${a}. Then ${a} plus what makes ${a + b}? ${b}!`); } };
   },
 
+  tens(L, p) {
+    // Two-digit adding and taking away, always tied back to tens and ones.
+    if (!p) {
+      if (L === 1) { const a = 10 * rnd(1, 6), b = 10 * rnd(1, 9 - a / 10); p = { a, b, op: '+' }; }
+      else if (L === 2) { const a = 10 * rnd(2, 8) + rnd(0, 5); p = { a, b: rnd(1, 9 - a % 10), op: '+' }; }
+      else if (L === 3) { const a = 10 * rnd(4, 9); p = { a, b: 10 * rnd(1, a / 10 - 1), op: '−' }; }
+      else if (L === 4) {
+        if (Math.random() < .55) { const a = 10 * rnd(1, 7) + rnd(5, 9); p = { a, b: rnd(10 - a % 10, 9), op: '+' }; }
+        else { const a = 10 * rnd(2, 8) + rnd(0, 4); p = { a, b: rnd(a % 10 + 1, 9), op: '−' }; }
+      } else {
+        let a, b; do { a = 10 * rnd(1, 6) + rnd(0, 6); b = 10 * rnd(1, 3) + rnd(0, 5); } while (a % 10 + b % 10 > 9 || a + b > 99);
+        p = { a, b, op: '+' };
+      }
+    }
+    const { a, b, op } = p, ans = op === '+' ? a + b : a - b;
+    const st = stack(eq([a, op, b, '=', '?']));
+    const q = `What is ${a} ${op === '+' ? 'plus' : 'take away'} ${b}?`;
+    const ta = Math.floor(a / 10), oa = a % 10, tb = Math.floor(b / 10), ob = b % 10;
+    let teach;
+    if (L === 1 || L === 3) teach = `${ta} tens ${op === '+' ? 'plus' : 'take away'} ${tb} tens is ${ans / 10} tens. ${ans}!`;
+    else if (L === 2) teach = 'Only the ones change. The tens stay the same.';
+    else if (L === 4) teach = op === '+' ? `${a} needs ${10 - oa} to make ${a + 10 - oa}. Then ${b - (10 - oa)} more is ${ans}.` : `${a} take away ${oa} is ${a - oa}. Take away ${b - oa} more: ${ans}.`;
+    else teach = `Add the tens: ${ta * 10} plus ${tb * 10} is ${(ta + tb) * 10}. Add the ones: ${oa} plus ${ob} is ${oa + ob}. ${ans}!`;
+    return { p, say: q, text: q, stage: st, answer: ans, teach,
+      choices: choicesFor(ans, 4, 0, 120, [ans + 10, ans - 10, op === '+' ? ans + 1 : ans - 1]),
+      help: async () => {
+        if (L === 1 || L === 3) {
+          const blk = baseEl(0, ta, 0); st.append(blk.el);
+          if (op === '+') { await countParts(blk.parts); const more = baseEl(0, tb, 0); blk.el.append(...more.el.children); await say(`${tb} more tens.`); await countParts(more.parts, a); }
+          else { await countParts(blk.parts); const bars = [...blk.el.querySelectorAll('.stick')]; bars.slice(-tb).forEach(x => x.classList.add('away')); await say(`Take away ${tb} tens.`); }
+        } else if (L === 2) {
+          const blk = baseEl(0, ta, oa); st.append(blk.el);
+          await say(`${a} is ${ta} tens and ${oa} ones. Count on ${b} more.`);
+          const os = el('div', 'ones'), parts = [];
+          for (let i = 0; i < b; i++) { const c = el('i', 'bn'); os.append(c); parts.push({ el: c, v: 1 }); }
+          blk.el.append(os); await countParts(parts, a);
+        } else await say(teach);
+        await say(`${a} ${op === '+' ? 'plus' : 'take away'} ${b} is ${ans}.`);
+      } };
+  },
+  groups(L, p) {
+    const e = THINGS[(p && p.t) ?? rnd(0, THINGS.length - 1)];
+    if (L === 2) {
+      p = p || { d: rnd(3, 9), near: Math.random() < .5, t: 0 };
+      const { d, near } = p, b = near ? d + 1 : d, ans = d + b;
+      const q = `What is ${d} plus ${b}?`;
+      return { p, say: q, text: q, stage: stack(eq([d, '+', b, '=', '?'])), answer: ans,
+        choices: choicesFor(ans, 4, 0, 20, [ans + 1, ans - 1, 2 * d + 2]),
+        teach: near ? `Double ${d} is ${2 * d}, and one more is ${ans}.` : `Double ${d} is ${2 * d}.`,
+        help: async () => { await say(near ? `${d} plus ${d} is ${2 * d}. ${b} is one more than ${d}, so add one more: ${ans}.` : `Doubles! ${d} and ${d}.`); if (!near) { const g = el('div', 'objs'); const A = objs(d, '🔵'), B = objs(d, '🔵'); g.append(A, B); $('#stage').firstChild.append(g); await countThrough([...g.querySelectorAll('.obj')]); } } };
+    }
+    if (L === 4) {
+      p = p || { r: rnd(2, 5), c: rnd(2, 5), t: rnd(0, THINGS.length - 1) };
+      const { r, c } = p, ans = r * c, arr = el('div', 'arows'), parts = [];
+      for (let i = 0; i < r; i++) { const row = el('div', 'arow bn'); for (let j = 0; j < c; j++) row.append(el('span', 'obj', THINGS[p.t][0])); arr.append(row); parts.push({ el: row, v: c }); }
+      const q = `There are ${r} rows with ${c} in each row. How many in all?`;
+      return { p, say: q, text: q, stage: stack(arr), answer: ans,
+        choices: choicesFor(ans, 4, 1, 30, [r + c, ans + c, ans - c]),
+        teach: `${r} rows of ${c} is ${ans}.`,
+        help: async () => { await say(`Count by ${c}s, one row at a time.`); await countParts(parts); } };
+    }
+    const k = (p && p.k) || rnd(2, L === 1 ? 4 : 4), n = (p && p.n) || (L === 1 ? rnd(2, 5) : rnd(2, 4));
+    p = p || { k, n, t: THINGS.indexOf(e) };
+    const [em, pl] = THINGS[p.t], wrap = el('div', 'objs'), parts = [];
+    if (L === 1) {
+      for (let i = 0; i < p.k; i++) { const g = objs(p.n, em); wrap.append(g); const gr = g.firstChild; gr.classList.add('bn'); parts.push({ el: gr, v: p.n }); }
+      const q = `${p.k} groups with ${p.n} ${pl} in each. How many ${pl} in all?`;
+      return { p, say: q, text: q, stage: wrap, answer: p.k * p.n,
+        choices: choicesFor(p.k * p.n, 4, 1, 30, [p.k + p.n, p.k * p.n + p.n]),
+        teach: `${p.k} groups of ${p.n} is ${p.k * p.n}.`,
+        help: async () => { await say(`Count by ${p.n}s.`); await countParts(parts); } };
+    }
+    // L3: share equally
+    const total = p.k * p.n, pile = objs(total, em);
+    const q = `${total} ${pl} are shared equally by ${p.k} friends. How many does each friend get?`;
+    return { p, say: q, text: q, stage: stack(pile), answer: p.n,
+      choices: choicesFor(p.n, 4, 1, 12, [p.k, total - p.k]),
+      teach: `${total} shared by ${p.k} is ${p.n} each.`,
+      help: async () => {
+        const g = el('div', 'objs'); for (let i = 0; i < p.k; i++) g.append(objs(p.n, em));
+        pile.replaceWith(g); await say(`Give one to each friend, again and again. Each friend gets ${p.n}.`);
+        await countThrough([...g.firstChild.querySelectorAll('.obj')]);
+      } };
+  },
+  clock(L, p) {
+    const fmt = (h, m) => `${h}:${m ? '30' : '00'}`, words = (h, m) => m ? `half past ${h}` : `${h} o'clock`;
+    const nextH = h => h === 12 ? 1 : h + 1, prevH = h => h === 1 ? 12 : h - 1;
+    if (!p) p = { h: rnd(1, 12), m: L === 1 ? 0 : L === 4 ? 0 : (Math.random() < .6 ? 30 : 0) };
+    const { h, m } = p;
+    if (L === 3) {
+      if (!p.opts) {
+        const wrong = shuffle([[nextH(h), m], [h, m ? 0 : 30], [prevH(h), m]]).slice(0, 2);
+        p.opts = shuffle([[h, m], ...wrong]);
+      }
+      const cards = p.opts.map(([a, b]) => clockEl(a, b));
+      const q = `Which clock shows ${words(h, m)}?`;
+      return { p, kind: 'cards', cards, say: q, text: q, stage: stack(el('div', 'eq', fmt(h, m))), answer: String(p.opts.findIndex(([a, b]) => a === h && b === m)),
+        help: async () => { await say(m ? `Half past means the long hand points down to the 6, and the short hand is just past the ${h}.` : `${h} o'clock means the long hand points straight up to the 12, and the short hand points to the ${h}.`); } };
+    }
+    const shown = clockEl(h, m);
+    const ansH = L === 4 ? nextH(h) : h, ans = fmt(ansH, m);
+    const q = L === 4 ? `It is ${words(h, m)}. What time will it be in one hour?` : 'What time is it?';
+    const opts = new Set([ans]);
+    for (const [a, b] of shuffle([[nextH(ansH), m], [prevH(ansH), m], [ansH, m ? 0 : 30], [12, 0], [m ? nextH(ansH) : 6, m ? 30 : 0]])) if (opts.size < 4) opts.add(fmt(a, b));
+    return { p, say: q, text: q, stage: stack(shown), answer: ans, choices: [...opts].sort((x, y) => parseFloat(x) - parseFloat(y)),
+      teach: L === 4 ? `One hour after ${h} is ${ansH}.` : `The short hand shows the hour.`,
+      help: async () => {
+        shown.classList.add('lit');
+        await say(`The short pink hand shows the hour. It points ${m ? 'just past the' : 'to the'} ${h}. The long green hand points to the ${m ? '6, that means half past' : '12, that means o\'clock'}.`);
+        if (L === 4) await say(`One hour later, the short hand moves to the ${ansH}.`);
+        await say(`It's ${words(ansH, m)}.`);
+      } };
+  },
+  money(L, p) {
+    if (!p) {
+      if (L === 1) p = { d: 0, n: 0, c: rnd(3, 12) };
+      else if (L === 2) p = { d: 0, n: rnd(1, 3), c: rnd(0, 4) };
+      else if (L === 3) p = { d: rnd(1, 4), n: 0, c: rnd(0, 9) };
+      else p = { d: rnd(1, 3), n: 1, c: rnd(0, 4) };
+    }
+    const { d, n, c } = p, ans = 10 * d + 5 * n + c, wrap = el('div', 'coins'), parts = [];
+    const add = (cls, v, lbl, k) => { for (let i = 0; i < k; i++) { const x = el('span', 'coin bn ' + cls, lbl); wrap.append(x); parts.push({ el: x, v }); } };
+    add('c10', 10, '10¢', d); add('c5', 5, '5¢', n); add('c1', 1, '1¢', c);
+    const cents = v => `${v}¢`;
+    return { p, say: 'How much money is this?', text: 'How much money?', stage: stack(wrap), answer: cents(ans),
+      choices: choicesFor(ans, 4, 1, 60, [d + n + c, ans + 5, ans - 5].filter(v => v !== ans)).map(cents),
+      teach: L >= 2 ? `${d ? 'Dimes are 10 cents. ' : ''}${n ? 'A nickel is 5 cents. ' : ''}Pennies are 1 cent.` : null,
+      help: async () => {
+        await say(d ? 'Count the dimes by 10s, then nickels by 5s, then pennies by 1s.' : n ? 'Count the nickels by 5s, then the pennies by 1s.' : 'Each penny is 1 cent. Count them.');
+        await countParts(parts);
+        await say(`${ans} cents!`);
+      } };
+  },
+
   /* ===== little learner track ===== */
   lcount(L, p) {
     const hi = [3, 5, 10][L - 1];
@@ -1199,6 +1374,7 @@ function chooseSkill() {
 }
 
 function nextQuestion() {
+  if (M) return themeQuestion();
   const di = P.review.findIndex(x => x.due <= P.total && isUnlocked(x.skill));
   if (di >= 0) {
     const r = P.review.splice(di, 1)[0];
@@ -1209,6 +1385,167 @@ function nextQuestion() {
   for (let i = 0; i < 4; i++) { q = GEN[k](L); if (k + JSON.stringify(q.p) !== lastKey) break; }
   return Object.assign(q, { skill: k, level: L });
 }
+
+/* ---------- bonus missions (themed puzzle modes, big kid track) ---------- */
+const THEMES = {
+  rangers: { name: 'Power Rangers', tag: 'Morph into math power!', icon: '🔴🔵🟡', mover: '🦸', goal: '⚡', steps: 6,
+    reward: '⚡', rewardName: 'power coin', start: "It's morphin time! Solve the puzzles to power up the Rangers!", win: 'Ranger power! Mission complete!',
+    praise: ['Morphenomenal!', 'Go go math power!', 'Ranger strong!', 'Power up!'], boss: [['⚡', 'bolt'], ['💎', 'crystal']] },
+  paw: { name: 'Paw Patrol', tag: 'Rescue missions', icon: '🐶🐾🚒', mover: '🐶', goal: '🏠', steps: 6,
+    reward: '🦴', rewardName: 'pup badge', start: 'Paw Patrol is on a roll! Help the pups with a rescue!', win: 'Mission accomplished, pups!',
+    praise: ['Paw-some!', 'Great rescue!', 'Pups to the rescue!', 'Ruff ruff, right!'], boss: [['🦴', 'bone'], ['🐾', 'paw']] },
+  spidey: { name: 'Spidey', tag: 'Swing into puzzles', icon: '🕷️🕸️🏙️', mover: '🕷️', goal: '🕸️', steps: 6,
+    reward: '🕸️', rewardName: 'web badge', start: 'Spidey needs your help to save the city!', win: 'City saved! Thwip!',
+    praise: ['Thwip! Correct!', 'Spidey sense says yes!', 'Amazing!', 'Web-tastic!'], boss: [['🕷️', 'spider'], ['🕸️', 'web']] },
+};
+let M = null;   // current bonus mode, or null for the regular pond
+const two = a => { const s = shuffle(a.slice()); return [s[0], s[1]]; };
+function tier() {
+  const s = P.skills; let t = 1;
+  if ((s.facts && s.facts.level >= 2) || (s.story && s.story.level >= 3)) t = 2;
+  if (s.tens && s.tens.level >= 2) t = 3;
+  return t;
+}
+function addPair(t) {
+  let a, b;
+  if (t === 1) do { a = rnd(1, 8); b = rnd(1, 8); } while (a + b > 10);
+  else if (t === 2) do { a = rnd(3, 9); b = rnd(3, 9); } while (a + b <= 10);
+  else { a = 10 * rnd(1, 5) + rnd(0, 9); b = pick([10, 20, 30, rnd(3, 9)]); }
+  return [a, b];
+}
+function subPair(t) {
+  let c, b;
+  if (t === 1) { c = rnd(4, 10); b = rnd(1, c - 1); }
+  else if (t === 2) { c = rnd(11, 18); b = rnd(c - 9, 9); }
+  else { c = 10 * rnd(4, 9) + rnd(0, 9); b = 10 * rnd(1, 3); }
+  return [c, b];
+}
+// A word problem with an arithmetic answer. kind: add | sub | cmp | miss (b + ? = a)
+function tArith(skill, text, kind, a, b, e) {
+  const ans = kind === 'add' ? a + b : a - b;
+  const parts = kind === 'add' ? [a, '+', b, '=', ans] : kind === 'miss' ? [b, '+', '?', '=', a] : [a, '−', b, '=', ans];
+  const shown = parts.map(x => x === '?' ? ans : x).join(' ');
+  return { skill, say: text, text, stage: stack(el('div', 'listen', e)), answer: ans,
+    choices: choicesFor(ans, 4, 0, 150, [ans + 10, ans - 10, kind === 'add' ? ans + 1 : a + b]),
+    teach: shown,
+    help: async () => {
+      const st = $('#stage').firstChild;
+      if (a <= 20 && b <= 20) {
+        if (kind === 'add') { const g = el('div', 'objs'), A = objs(a, e), B = objs(b, e); g.append(A, el('span', 'plus', '+'), B); st.replaceChildren(g); await say(`Start at ${a} and count on ${b}.`); await countThrough([...B.querySelectorAll('.obj')], a + 1); }
+        else if (kind === 'miss') { const g = el('div', 'objs'), A = objs(b, e), B = objs(ans, '⚪'); g.append(A, B); st.replaceChildren(g); await say(`We have ${b}. Count up to ${a}.`); await countThrough([...B.querySelectorAll('.obj')], b + 1); }
+        else if (kind === 'cmp') { const r1 = objs(a, e), r2 = objs(b, e); st.replaceChildren(r1, r2); await say('Match them up. Count the extra ones.'); await countThrough([...r1.querySelectorAll('.obj')].slice(b)); }
+        else { const g = objs(a, e, b); st.replaceChildren(g); await sleep(1900); await say(`${b} are gone. Count what is left.`); await countThrough([...g.querySelectorAll('.obj:not(.gone)')]); }
+      } else await say(kind === 'add' ? 'Add the tens first, then the ones.' : 'Take away the tens first, then the ones.');
+      st.append(eq(parts)); await say(`${shown.replace(/−/g, 'minus').replace(/\+/g, 'plus').replace(/=/g, 'equals')}.`);
+    } };
+}
+function tSkip(skill, text, s, start, e) {
+  const seq = [0, 1, 2, 3].map(i => start + s * i), ans = start + 4 * s, nl = el('div', 'nl'), cells = [];
+  seq.forEach(v => { const c = el('div', 'cell', String(v)); cells.push(c); nl.append(c); }); nl.append(el('div', 'cell q', '?'));
+  return { skill, say: text, text, stage: stack(el('div', 'listen', e), nl), answer: ans,
+    choices: choicesFor(ans, 4, 0, 150, [ans + 1, ans - 1, ans + s]), teach: `Counting by ${s}s: ${[...seq, ans].join(', ')}.`,
+    help: async () => { for (const c of cells) { c.classList.add('lit'); await say(c.textContent, 420); } await say(`${ans}! It goes up by ${s} each time.`); } };
+}
+function tGroups(text, k, n, e) {
+  const wrap = el('div', 'objs'), parts = [];
+  for (let i = 0; i < k; i++) { const g = objs(n, e); wrap.append(g); g.firstChild.classList.add('bn'); parts.push({ el: g.firstChild, v: n }); }
+  return { skill: 'groups', say: text, text, stage: wrap, answer: k * n,
+    choices: choicesFor(k * n, 4, 1, 60, [k + n, k * n + n]), teach: `${k} groups of ${n} is ${k * n}.`,
+    help: async () => { await say(`Count by ${n}s.`); await countParts(parts); } };
+}
+function tColors(text, items) {
+  const unit = pick([[0, 1], [0, 1, 2], [0, 0, 1], [0, 1, 1]]), shownN = unit.length * 2 + rnd(0, unit.length - 1), seq = [];
+  while (seq.length <= shownN) seq.push(...unit);
+  const row = el('div', 'pat'), spans = [];
+  for (let i = 0; i < shownN; i++) { const s = el('span', '', items[seq[i]][0]); spans.push(s); row.append(s); }
+  row.append(el('span', 'gap', '?'));
+  const opts = shuffle([0, 1, 2]), cards = opts.map(i => { const c = el('span', 'sz', items[i][0]); c.style.fontSize = '3rem'; return c; });
+  return { skill: 'bpattern', kind: 'cards', cards, say: text, text, stage: row, answer: String(opts.indexOf(seq[shownN])),
+    help: async () => { for (let i = 0; i < spans.length; i++) { spans[i].classList.add('lit'); await say(items[seq[i]][1], 360); } await say(`Next comes ${items[seq[shownN]][1]}!`); } };
+}
+function tOdd(text, same, odd, why) {
+  const opts = shuffle([...shuffle(same.slice()).slice(0, 3), odd]);
+  const cards = opts.map(x => { const c = el('span', 'sz', x); c.style.fontSize = '3rem'; return c; });
+  return { skill: 'teaser', kind: 'cards', cards, say: text, text, stage: stack(el('div', 'listen', '🤔')), answer: String(opts.indexOf(odd)),
+    teach: why, help: async () => { await say(why); } };
+}
+function tRiddle(text, ans, why, e) {
+  return { skill: 'teaser', say: text, text, stage: stack(el('div', 'listen', e)), answer: ans,
+    choices: choicesFor(ans, 4, 0, 60, [ans + 2, ans - 2]), teach: why, help: async () => { await say(why); } };
+}
+function tSecret(e, nm, t) {
+  const k = t === 1 ? 2 : pick([2, 3]), a = t === 1 ? rnd(1, 5) : rnd(2, 9), parts = [];
+  for (let i = 0; i < k; i++) { if (i) parts.push('+'); parts.push(e); }
+  parts.push('=', k * a);
+  const text = `${k === 2 ? 'Two' : 'Three'} ${nm}s make ${k * a}. What number is one ${nm}?`;
+  return { skill: 'teaser', say: text, text, stage: stack(eq(parts), eq([e, '=', '?'])), answer: a,
+    choices: choicesFor(a, 4, 0, 30, [k * a]), teach: `${k} times ${a} makes ${k * a}.`,
+    help: async () => { const d = el('div', 'objs'); for (let i = 0; i < k; i++) d.append(objs(a, '🔵')); $('#stage').firstChild.append(d); await say(`Share ${k * a} into ${k} equal groups.`); await countThrough([...d.firstChild.querySelectorAll('.obj')]); } };
+}
+function tBoss(th, t) {
+  const [[e1, n1], [e2, n2]] = th.boss, a = rnd(t === 1 ? 1 : 3, t === 1 ? 5 : 9), b = rnd(1, t === 1 ? 5 : 9);
+  const text = `Boss puzzle! Two ${n1}s make ${2 * a}. A ${n1} and a ${n2} make ${a + b}. What number is the ${n2}?`;
+  return { skill: 'teaser', boss: true, say: text, text: text.replace('Boss puzzle! ', ''), stage: stack(eq([e1, '+', e1, '=', 2 * a]), eq([e1, '+', e2, '=', a + b]), eq([e2, '=', '?'])), answer: b,
+    choices: choicesFor(b, 4, 0, 20, [a, a + b]), teach: `${n1} is ${a}, so ${n2} is ${b}.`,
+    help: async () => { await say(`First find the ${n1}. Two ${n1}s make ${2 * a}, so one ${n1} is ${a}. Then ${a} plus what makes ${a + b}? ${b}!`); } };
+}
+const RC = [['Red', '🔴'], ['Blue', '🔵'], ['Yellow', '🟡'], ['Green', '🟢'], ['Black', '⚫'], ['Pink', '💗']];
+const PUPS = [['Chase', 'him'], ['Marshall', 'him'], ['Skye', 'her'], ['Rubble', 'him'], ['Rocky', 'him'], ['Zuma', 'him'], ['Everest', 'her']];
+const TEMPLATES = {
+  rangers: [
+    t => { const [a, b] = addPair(t), [c1, c2] = two(RC); return tArith('story', `The ${c1[0]} Ranger has ${a} power coins. The ${c2[0]} Ranger gives ${b} more. How many power coins does the ${c1[0]} Ranger have now?`, 'add', a, b, '⚡'); },
+    t => { const [c, b] = subPair(t); return tArith('story', `${c} Putty monsters attack! The Rangers stop ${b} of them. How many Putties are still left?`, 'sub', c, b, '👾'); },
+    t => { const [c, b] = subPair(t), [c1, c2] = two(RC); return tArith('story', `The ${c1[0]} Ranger did ${c} karate kicks. The ${c2[0]} Ranger did ${b}. How many more kicks did the ${c1[0]} Ranger do?`, 'cmp', c, b, '🥋'); },
+    t => { const [c, b] = subPair(t); return tArith('facts', `The Megazord needs ${c} power crystals. It has ${b}. How many more crystals does it need?`, 'miss', c, b, '💎'); },
+    () => { const cols = shuffle(RC.slice()).slice(0, 3).map(([n, e]) => [e, n.toLowerCase()]); return tColors('The Rangers line up in a pattern. Which color comes next?', cols); },
+    t => { const s = t === 1 ? pick([2, 5, 10]) : pick([5, 10]); return tSkip('bpattern', `Unlock the Morpher! Count by ${s}s. What comes next?`, s, s * rnd(t === 1 ? 0 : 2, t === 1 ? 2 : 6), '🔓'); },
+    t => { const k = rnd(2, t === 1 ? 3 : 5), n = t === 1 ? 2 : 5; return tGroups(`${k} Zords join together. Each Zord has ${n} power lights. How many lights in all?`, k, n, '💡'); },
+    t => tSecret('⚡', 'power bolt', t),
+  ],
+  paw: [
+    t => { const [a, b] = addPair(t), [[p1, him1], [p2]] = two(PUPS); return tArith('story', `${p1} has ${a} pup treats. ${p2} gives ${him1} ${b} more. How many treats does ${p1} have now?`, 'add', a, b, '🦴'); },
+    t => { const [c, b] = subPair(t), [p1] = pick(PUPS); return tArith('story', `${c} kittens are stuck in a tree! ${p1} rescues ${b} of them. How many kittens still need help?`, 'sub', c, b, '🐱'); },
+    t => { const [c, b] = subPair(t), [[p1], [p2]] = two(PUPS); return tArith('story', `${p1} found ${c} bones. ${p2} found ${b}. How many more bones did ${p1} find?`, 'cmp', c, b, '🦴'); },
+    t => { const [c, b] = subPair(t); return tArith('facts', `Rubble needs ${c} sandbags to fix the dam. He has ${b}. How many more sandbags does he need?`, 'miss', c, b, '🧱'); },
+    t => { const s = t === 1 ? pick([2, 5, 10]) : pick([5, 10]); return tSkip('bpattern', `Skye flies higher and higher by ${s}s. What comes next?`, s, s * rnd(t === 1 ? 0 : 2, t === 1 ? 2 : 6), '🚁'); },
+    t => { const k = rnd(2, t === 1 ? 3 : 4), n = t === 1 ? 2 : 4; return tGroups(`${k} pups get ready. Each pup has ${n} ${n === 2 ? 'ears' : 'paws'}. How many ${n === 2 ? 'ears' : 'paws'} in all?`, k, n, n === 2 ? '👂' : '🐾'); },
+    () => Math.random() < .5 ? tOdd('Which one is NOT a pup?', ['🐶', '🐕', '🐩', '🦮'], pick(['🐱', '🐰', '🐭', '🐔']), 'The others are all pups!') : tOdd('Which one is NOT a rescue vehicle?', ['🚒', '🚓', '🚑', '🚁'], pick(['🍦', '🎈', '🧸']), 'The others all go on rescues!'),
+    t => tSecret('🦴', 'bone', t),
+  ],
+  spidey: [
+    t => { const [a, b] = addPair(t); return tArith('story', `Spidey swings past ${a} buildings, then ${b} more. How many buildings did he swing past?`, 'add', a, b, '🏢'); },
+    t => { const [c, b] = subPair(t); return tArith('story', `Green Goblin sends ${c} pumpkin bombs. Spidey webs ${b} of them. How many are still flying?`, 'sub', c, b, '🎃'); },
+    t => { const [c, b] = subPair(t); return tArith('story', `Ghost-Spider caught ${c} bad guys. Spin caught ${b}. How many more did Ghost-Spider catch?`, 'cmp', c, b, '🦹'); },
+    t => { const [c, b] = subPair(t); return tArith('facts', `Spidey needs ${c} web shots to stop Rhino. He has used ${b}. How many more web shots does he need?`, 'miss', c, b, '🕸️'); },
+    t => t === 1 ? tRiddle('Doc Ock has 4 robot arms and 2 regular arms. How many arms in all?', 6, '4 plus 2 is 6 arms!', '🐙')
+      : t === 2 ? tRiddle('A spider has 8 legs. How many legs do 2 spiders have?', 16, '8 plus 8 is 16. Double 8!', '🕷️')
+      : (k => tRiddle(`Each Doc Ock has 4 robot arms. How many robot arms do ${k} Doc Ocks have?`, 4 * k, `Count by 4s: ${[...Array(k)].map((_, i) => 4 * (i + 1)).join(', ')}.`, '🐙'))(rnd(3, 5)),
+    t => { const s = t === 1 ? pick([2, 5, 10]) : pick([5, 10]); return tSkip('bpattern', `Spidey climbs the building by ${s}s. What floor comes next?`, s, s * rnd(t === 1 ? 0 : 2, t === 1 ? 2 : 6), '🏙️'); },
+    t => { const k = rnd(2, t === 1 ? 3 : 5), n = t === 1 ? 2 : pick([2, 5]); return tGroups(`${k} heroes each shoot ${n} webs. How many webs in all?`, k, n, '🕸️'); },
+    t => tSecret('🕷️', 'spider', t),
+  ],
+};
+let lastT = -1;
+function themeQuestion() {
+  const th = THEMES[M], t = tier();
+  let q;
+  if (getPad() === th.steps - 1) q = tBoss(th, t);
+  else {
+    const list = TEMPLATES[M]; let i;
+    do { i = rnd(0, list.length - 1); } while (i === lastT && list.length > 1);
+    lastT = i; q = list[i](t);
+  }
+  q.p = { theme: M, text: q.text };
+  q.noReview = true;
+  q.level = P.skills[q.skill].level;
+  return q;
+}
+
+// Progress along the pond (or the mission track) is kept separately for each mode.
+function padKey() { return M ? 'pad_' + M : 'pad'; }
+function getPad() { return (P && P[padKey()]) || 0; }
+function setPad(v) { P[padKey()] = v; }
+function pondLen() { return M ? THEMES[M].steps : TRACK[P.track].pond; }
 
 /* ---------- play loop ---------- */
 let q = null, tries = 0, busy = false;
@@ -1235,6 +1572,7 @@ function ask() {
   lastKey = q.skill + JSON.stringify(q.p);
   recentSkills.push(q.skill); if (recentSkills.length > 5) recentSkills.shift();
   renderQ();
+  if (q.boss) { showToast('Boss puzzle!'); tone(330, .3, 'square', 0, .08); tone(440, .4, 'square', .2, .08); }
   sayNow(q.say);
   if (q.onShow) q.onShow();
 }
@@ -1251,14 +1589,14 @@ async function onAnswer(b) {
     let ev = null;
     if (!q.graded) { q.graded = true; P.total++; ev = grade(q.skill, 1); }
     chime();
-    const praise = sayNow(pick(PRAISE[P.track]));
+    const praise = sayNow(pick(M ? THEMES[M].praise : PRAISE[P.track]));
     await sleep(350);
-    P.pad = Math.min(TRACK[P.track].pond, P.pad + 1); placeFrog(true); hopSnd();
+    setPad(Math.min(pondLen(), getPad() + 1)); placeFrog(true); hopSnd();
     save();
     if (q.teach) { await praise; $('#ptext').textContent = q.teach; await say(q.teachSay || q.teach); }
     else await sleep(700);
     await announce(ev, q.skill, before);
-    if (P.pad >= TRACK[P.track].pond) return party();
+    if (getPad() >= pondLen()) return party();
     await sleep(300);
     ask();
   } else {
@@ -1267,7 +1605,7 @@ async function onAnswer(b) {
     if (!q.graded) {
       q.graded = true; P.total++;
       grade(q.skill, 0);   // a run of misses quietly eases the level down
-      P.review.push({ skill: q.skill, level: q.level, p: q.p, due: P.total + rnd(3, 5) });
+      if (!q.noReview) P.review.push({ skill: q.skill, level: q.level, p: q.p, due: P.total + rnd(3, 5) });
       if (P.review.length > 6) P.review.shift();
       save();
     }
@@ -1294,16 +1632,18 @@ function showToast(t) { const e = $('#toast'); e.textContent = t; e.hidden = fal
 /* ---------- pond ---------- */
 let slots = [];
 function buildPond() {
-  const pond = $('#pond'), frog = $('#frog'), n = P ? TRACK[P.track].pond : 10, at = P ? P.pad : 0;
+  const pond = $('#pond'), frog = $('#frog'), n = P ? pondLen() : 10, at = P ? getPad() : 0;
+  pond.className = 'pond' + (M ? ' th th-' + M : '');
+  frog.innerHTML = M ? `<span class="hero">${THEMES[M].mover}</span>` : FROG;
   pond.querySelectorAll('.slot').forEach(s => s.remove());
   slots = [];
   const rock = el('div', 'slot rock'); pond.insertBefore(rock, frog); slots.push(rock);
-  for (let i = 1; i <= n; i++) { const p = el('div', 'slot pad' + (i <= at ? ' done' : '') + (i === n ? ' goal' : '')); pond.insertBefore(p, frog); slots.push(p); }
+  for (let i = 1; i <= n; i++) { const p = el('div', 'slot pad' + (i <= at ? ' done' : '') + (i === n ? ' goal' : '')); if (i === n) p.dataset.goal = M ? THEMES[M].goal : '🌸'; pond.insertBefore(p, frog); slots.push(p); }
   pond.style.justifyContent = n < 10 ? 'space-around' : 'space-between';
   placeFrog(false);
 }
 function placeFrog(anim) {
-  const at = P ? P.pad : 0, t = slots[at]; if (!t) return;
+  const at = P ? getPad() : 0, t = slots[at]; if (!t) return;
   const frog = $('#frog');
   if (!anim) frog.style.transition = 'none';
   frog.style.left = (t.offsetLeft + t.offsetWidth / 2) + 'px';
@@ -1315,8 +1655,21 @@ addEventListener('resize', () => placeFrog(false));
 
 /* ---------- party ---------- */
 function party() {
+  if (M) {
+    const th = THEMES[M]; P.badges[M] = (P.badges[M] || 0) + 1; setPad(0); save();
+    const n = P.badges[M];
+    $('#partyTitle').textContent = th.win;
+    $('#newFriend').textContent = th.reward;
+    $('#partyText').textContent = `${P.name} earned a ${th.rewardName}! That makes ${n}.`;
+    $('#seeFriends').hidden = true; $('#again').textContent = 'Next mission';
+    $('#party').hidden = false; confetti();
+    tone(523, .2, 'triangle'); tone(659, .2, 'triangle', .15); tone(784, .2, 'triangle', .3); tone(1047, .5, 'triangle', .45);
+    sayNow(`${th.win} You earned a ${th.rewardName}!`);
+    return;
+  }
+  $('#seeFriends').hidden = false; $('#again').textContent = 'Hop again';
   const owned = new Set(P.stickers), pool = FRIENDS.filter(f => !owned.has(f)), f = pick(pool.length ? pool : FRIENDS);
-  P.stickers.push(f); P.pad = 0; save();
+  P.stickers.push(f); setPad(0); save();
   $('#partyTitle').textContent = `${P.name} crossed the pond!`;
   $('#newFriend').textContent = f;
   $('#partyText').textContent = `A new pond friend joined you. That makes ${P.stickers.length}!`;
@@ -1395,14 +1748,35 @@ function startPlay(id) {
   P = store.players.find(p => p.id === id); if (!P) return;
   store.current = id; save();
   try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {}
-  recentSkills = []; lastKey = '';
-  $('#start').hidden = true; $('#playView').hidden = false; $('#home').hidden = false; $('#friendsBtn').hidden = false;
+  recentSkills = []; lastKey = ''; M = null;
+  if (P.track === 'big') {
+    $('#start').hidden = true; $('#modeView').hidden = false; $('#home').hidden = false;
+    renderModes(); sayNow(`Hi ${P.name}! Pick a game.`);
+    return;
+  }
+  beginMode(null);
+}
+function renderModes() {
+  const box = $('#modes'); box.replaceChildren();
+  $('#modeAsk').textContent = `Pick a game, ${P.name}!`;
+  const card = (mode, av, name, sub) => {
+    const b = el('button', 'player mode' + (mode ? ' m-' + mode : '')); b.dataset.mode = mode || '';
+    b.append(el('span', 'av', av), el('b', '', name), el('small', '', sub)); box.append(b);
+  };
+  card(null, '🐸', 'Lily Pad', `All your games · ${P.stickers.length} pond ${P.stickers.length === 1 ? 'friend' : 'friends'}`);
+  for (const k in THEMES) { const th = THEMES[k], n = P.badges[k] || 0; card(k, th.icon, th.name, `${th.tag} · ${n} ${th.rewardName}${n === 1 ? '' : 's'}`); }
+}
+$('#modes').addEventListener('click', e => { const b = e.target.closest('.mode'); if (b) beginMode(b.dataset.mode || null); });
+function beginMode(m) {
+  M = m; lastT = -1;
+  $('#start').hidden = true; $('#modeView').hidden = true; $('#playView').hidden = false; $('#home').hidden = false; $('#friendsBtn').hidden = false;
   buildPond();
-  sayNow(`Let's go, ${P.name}!`);
-  setTimeout(ask, 1300);
+  sayNow(m ? THEMES[m].start : `Let's go, ${P.name}!`);
+  setTimeout(ask, m ? 3400 : 1300);
 }
 $('#home').addEventListener('click', () => {
-  hush(); P = null; q = null;
+  hush(); P = null; q = null; M = null;
+  $('#modeView').hidden = true;
   $('#playView').hidden = true; $('#start').hidden = false; $('#home').hidden = true; $('#friendsBtn').hidden = true;
   renderPicker(); buildPond();
 });
