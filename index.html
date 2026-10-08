@@ -261,6 +261,16 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 .coin.lit,.grp.lit,.arow.lit{outline:4px solid var(--sun);outline-offset:2px}
 .arows{display:flex;flex-direction:column;gap:6px;align-items:center}
 .arow{position:relative;display:flex;gap:6px;padding:4px 8px;border-radius:12px;background:var(--water-soft);font-size:clamp(1.6rem,5vw,2.6rem);line-height:1.1}
+.art{display:inline-block}
+.eq .sym{width:1.05em;height:1.05em;vertical-align:-.2em}
+.art svg{display:block;width:100%;height:100%}
+.stage-art{width:clamp(110px,24vw,180px);height:clamp(110px,24vw,180px)}
+.mode .av.arts{display:flex;justify-content:center;letter-spacing:0}
+.mode .arts .art{width:clamp(54px,12vw,80px);height:clamp(54px,12vw,80px);margin:0 -4px}
+.frog .art{display:block;width:100%;aspect-ratio:1}
+.goal-art{position:absolute;inset:4%}
+.reward-art{width:140px;height:140px}
+#voicePick{font:inherit;font-size:1rem;padding:8px 10px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
 .tab{border:2px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 14px;font-weight:700}
 .tab[aria-pressed="true"]{background:var(--pad);border-color:var(--pad);color:var(--on-pad)}
 .ages{display:flex;gap:8px;flex-wrap:wrap}
@@ -367,6 +377,8 @@ button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-of
 
     <h3>Settings</h3>
     <div class="field"><label for="voiceOn"><input type="checkbox" id="voiceOn"> Read questions aloud</label></div>
+    <div class="field"><label for="voicePick">Voice <select id="voicePick"></select></label><button class="btn" id="voiceTest" type="button">Hear it</button></div>
+    <p>For the most natural voice, download a Premium voice on the iPad: Settings → Accessibility → Spoken Content (or Read &amp; Speak) → Voices → English, then pick one such as Ava (Premium) or Zoe (Premium). Close and reopen the app and choose it here.</p>
     <p>Each skill moves up a level after four first-try right answers out of five, and back down after a run of misses. Missed questions come back a few turns later. Progress is saved on this iPad; deleting the app from the home screen erases it.</p>
     <div class="btns"><button class="btn primary" id="closeGrown">Done</button></div>
   </div>
@@ -426,8 +438,8 @@ const SKILLS = {
   lpattern: { track: 'little', name: 'Patterns', levels: ['AB AB','AAB and ABB','ABC'], needs: ['lshape', 2] },
 };
 const TRACK = {
-  big:    { label: 'Big kid games (ages 5–6)', pond: 10, rate: .9 },
-  little: { label: 'Little learner games (ages 3–4)', pond: 5, rate: .82 },
+  big:    { label: 'Big kid games (ages 5–6)', pond: 10, rate: .96 },
+  little: { label: 'Little learner games (ages 3–4)', pond: 5, rate: .88 },
 };
 const trackFor = age => age <= 4 ? 'little' : 'big';
 const skillsFor = tr => Object.keys(SKILLS).filter(k => SKILLS[k].track === tr);
@@ -488,10 +500,23 @@ const boop = () => { tone(220, .25, 'sine', 0, .14); tone(196, .3, 'sine', .12, 
 const hopSnd = () => { if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(900, t + .18); g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + .25); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .3); };
 
 let voice = null;
+// Pick the most natural English voice on the device. Premium/Enhanced voices (downloadable in the
+// iPad's settings) sound far more human than the default compact ones; novelty voices are skipped.
+const NOVELTY = /albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|grandma|grandpa|rocko|shelley|flo\b|eddy|reed|sandy|eloquence/i;
+let voices = [];
+function voiceScore(v) {
+  let s = 0;
+  if (/premium/i.test(v.name)) s += 100; else if (/enhanced|neural|natural/i.test(v.name)) s += 60;
+  if (/ava|zoe|evan|nathan|allison|susan|samantha|nicky|joelle|noelle|aria|jenny|serena|kate|google us english/i.test(v.name)) s += 20;
+  if (/en[-_]US/i.test(v.lang)) s += 10;
+  if (v.localService) s += 2;
+  return s;
+}
 function pickVoice() {
   try {
-    const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
-    voice = vs.find(v => /samantha|karen|google us english|aria|jenny/i.test(v.name)) || vs.find(v => /en-US/i.test(v.lang)) || vs[0] || null;
+    voices = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang) && !NOVELTY.test(v.name)).sort((a, b) => voiceScore(b) - voiceScore(a));
+    voice = (store.voiceName && voices.find(v => v.name === store.voiceName)) || voices[0] || null;
+    if (!$('#grown').hidden) renderVoicePick();
   } catch (e) {}
 }
 try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
@@ -504,7 +529,7 @@ function say(text, minMs = 0) {
     if (canSpeak()) {
       try {
         const u = new SpeechSynthesisUtterance(text);
-        u.rate = TRACK[trk()].rate; u.pitch = 1.12; if (voice) u.voice = voice;
+        u.rate = TRACK[trk()].rate; u.pitch = 1.02; if (voice) { u.voice = voice; u.lang = voice.lang; }
         u.onend = () => { const left = minMs - (Date.now() - start); left > 0 ? setTimeout(fin, left) : fin(); };
         u.onerror = fin;
         speechSynthesis.speak(u);
@@ -544,7 +569,7 @@ function objs(n, e, gone = 0) {
   wrap.dataset.size = n <= 5 ? 'l' : n <= 10 ? 'm' : 's';
   return wrap;
 }
-function eq(parts) { const d = el('div', 'eq'); parts.forEach(p => { const s = el('span', p === '?' ? 'q' : '', String(p)); d.append(s, ' '); }); return d; }
+function eq(parts) { const d = el('div', 'eq'); parts.forEach(p => { if (p && p.svg) { d.append(artEl(p.svg, 'sym'), ' '); return; } const s = el('span', p === '?' ? 'q' : '', String(p)); d.append(s, ' '); }); return d; }
 function stack(...kids) { const d = el('div'); d.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:14px;max-width:100%'; d.append(...kids.filter(Boolean)); return d; }
 function frameEl(size, on) {
   const f = el('div', 'frame');
@@ -1386,17 +1411,101 @@ function nextQuestion() {
   return Object.assign(q, { skill: k, level: L });
 }
 
+/* ---------- bonus-mission artwork (original drawings, inline SVG) ---------- */
+const ART = {
+  ranger(c) {
+    return `<svg viewBox="0 0 120 120" aria-hidden="true">
+      <path d="M12 120 C12 93 33 82 60 82 C87 82 108 93 108 120Z" fill="${c}"/>
+      <path d="M40 84 L60 106 L80 84" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M25 56 C25 25 42 9 60 9 C78 9 95 25 95 56 L95 72 C95 84 85 91 72 91 L48 91 C35 91 25 84 25 72Z" fill="${c}"/>
+      <path d="M25 56 C25 25 42 9 60 9 C78 9 95 25 95 56" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="3"/>
+      <path d="M60 11 L60 31" stroke="rgba(255,255,255,.4)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M33 45 C33 38 39 34 46 34 L74 34 C81 34 87 38 87 45 L87 52 C87 58 81 62 74 62 L65 62 L60 70 L55 62 L46 62 C39 62 33 58 33 52Z" fill="#1b2230"/>
+      <path d="M41 41 L55 41" stroke="#8fb4d6" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="47" y="73" width="26" height="12" rx="5" fill="#dfe4ea"/>
+      <path d="M52 79 H68" stroke="#9aa3ad" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+  },
+  pup(hat, hc, fur = '#c98a4b', ear = '#8a5528') {
+    const hats = {
+      cap: `<path d="M27 46 C29 21 91 21 93 46Z" fill="${hc}"/><path d="M22 47 Q60 57 98 47 L98 52 Q60 62 22 52Z" fill="#1b2747"/><circle cx="60" cy="34" r="6" fill="#f2c230" stroke="#b88a10" stroke-width="1.5"/>`,
+      fire: `<path d="M25 49 C25 18 95 18 95 49Z" fill="${hc}"/><ellipse cx="60" cy="49" rx="42" ry="7" fill="#9e1d1d"/><rect x="51" y="25" width="18" height="15" rx="3" fill="#f2c230" stroke="#b88a10" stroke-width="1.5"/>`,
+      hard: `<path d="M27 48 C27 20 93 20 93 48Z" fill="${hc}"/><rect x="22" y="45" width="76" height="7" rx="3.5" fill="#c99a00"/><rect x="56" y="22" width="8" height="24" rx="3" fill="rgba(255,255,255,.45)"/>`,
+      pilot: `<path d="M27 50 C27 20 93 20 93 50Z" fill="${hc}"/><circle cx="46" cy="40" r="9" fill="#a9dcff" stroke="#3b3b3b" stroke-width="3"/><circle cx="74" cy="40" r="9" fill="#a9dcff" stroke="#3b3b3b" stroke-width="3"/><path d="M55 40 H65" stroke="#3b3b3b" stroke-width="3"/>`,
+    };
+    return `<svg viewBox="0 0 120 120" aria-hidden="true">
+      <ellipse cx="27" cy="68" rx="12" ry="24" transform="rotate(16 27 68)" fill="${ear}"/>
+      <ellipse cx="93" cy="68" rx="12" ry="24" transform="rotate(-16 93 68)" fill="${ear}"/>
+      <ellipse cx="60" cy="70" rx="34" ry="31" fill="${fur}"/>
+      <ellipse cx="60" cy="84" rx="18" ry="13" fill="#f6e5cd"/>
+      <circle cx="47" cy="66" r="6.5" fill="#1b1b1b"/><circle cx="73" cy="66" r="6.5" fill="#1b1b1b"/>
+      <circle cx="49.5" cy="63.5" r="2.2" fill="#fff"/><circle cx="75.5" cy="63.5" r="2.2" fill="#fff"/>
+      <ellipse cx="60" cy="79" rx="6.5" ry="5" fill="#1b1b1b"/>
+      <path d="M51 88 Q60 96 69 88" stroke="#1b1b1b" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <rect x="35" y="99" width="50" height="9" rx="4.5" fill="${hc}"/>
+      <circle cx="60" cy="108" r="8" fill="#f2c230" stroke="#b88a10" stroke-width="2"/>
+      ${hats[hat]}
+    </svg>`;
+  },
+  spider(c, c2) {
+    const L = [['M46 64 Q26 46 14 54'], ['M43 71 Q22 66 10 76'], ['M44 79 Q24 86 16 100'], ['M50 86 Q38 102 32 114']];
+    const legs = L.map(([d]) => `<path d="${d}"/>`).join('') + L.map(([d]) => `<path d="${d}" transform="translate(120 0) scale(-1 1)"/>`).join('');
+    return `<svg viewBox="0 0 120 120" aria-hidden="true">
+      <line x1="60" y1="0" x2="60" y2="48" stroke="#9aa5b1" stroke-width="2.5"/>
+      <g fill="none" stroke="#2a1d22" stroke-width="5" stroke-linecap="round">${legs}</g>
+      <ellipse cx="60" cy="74" rx="25" ry="23" fill="${c}"/>
+      <path d="M60 51 V97 M35 74 H85 M42 58 L78 90 M78 58 L42 90" stroke="rgba(0,0,0,.28)" stroke-width="1.6" fill="none"/>
+      <ellipse cx="60" cy="74" rx="13" ry="12" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="1.6"/>
+      <path d="M44 92 Q60 102 76 92" fill="${c2}"/>
+      <ellipse cx="50" cy="69" rx="8" ry="10" fill="#fff" stroke="#1b1b1b" stroke-width="2.5"/>
+      <ellipse cx="70" cy="69" rx="8" ry="10" fill="#fff" stroke="#1b1b1b" stroke-width="2.5"/>
+      <circle cx="51.5" cy="71" r="3.6" fill="#1b1b1b"/><circle cx="68.5" cy="71" r="3.6" fill="#1b1b1b"/>
+      <path d="M52 84 Q60 90 68 84" stroke="#1b1b1b" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  },
+  coin() {
+    return `<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" fill="#e3a91a"/><circle cx="60" cy="60" r="45" fill="#f7cb3c" stroke="#fff3c2" stroke-width="3"/>
+      <polygon points="66,18 36,66 57,66 49,103 84,51 63,51 71,18" fill="#fff" stroke="#c98a00" stroke-width="3" stroke-linejoin="round"/></svg>`;
+  },
+  pupBadge() {
+    return `<svg viewBox="0 0 120 120" aria-hidden="true"><path d="M60 6 L104 22 V58 C104 86 84 104 60 114 C36 104 16 86 16 58 V22Z" fill="#f2c230"/>
+      <path d="M60 15 L96 28 V58 C96 81 80 96 60 105 C40 96 24 81 24 58 V28Z" fill="#2b6fd6"/>
+      <g fill="#fff"><ellipse cx="60" cy="70" rx="15" ry="12"/><ellipse cx="41" cy="54" rx="6" ry="8"/><ellipse cx="53" cy="45" rx="6" ry="8"/><ellipse cx="67" cy="45" rx="6" ry="8"/><ellipse cx="79" cy="54" rx="6" ry="8"/></g></svg>`;
+  },
+  bone() {
+    return `<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="#a8814a" stroke="#a8814a" stroke-width="7"><circle cx="27" cy="45" r="15"/><circle cx="27" cy="75" r="15"/><circle cx="93" cy="45" r="15"/><circle cx="93" cy="75" r="15"/><rect x="26" y="46" width="68" height="28" rx="8"/></g><g fill="#f1dfb8"><circle cx="27" cy="45" r="15"/><circle cx="27" cy="75" r="15"/><circle cx="93" cy="45" r="15"/><circle cx="93" cy="75" r="15"/><rect x="26" y="46" width="68" height="28" rx="8"/></g><path d="M34 54 H86" stroke="#fff8e8" stroke-width="5" stroke-linecap="round"/></svg>`;
+  },
+  gem() {
+    return `<svg viewBox="0 0 120 120" aria-hidden="true"><polygon points="28,42 46,20 74,20 92,42 60,102" fill="#4fb8e8"/><polygon points="28,42 92,42 60,102" fill="#2f8fc4"/><polygon points="46,20 60,42 74,20" fill="#9fe0ff"/><polygon points="46,42 60,42 60,102" fill="#62c6f0"/></svg>`;
+  },
+  webBadge() {
+    let spokes = '', rings = '';
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; spokes += `<line x1="60" y1="60" x2="${(60 + 46 * Math.cos(a)).toFixed(1)}" y2="${(60 + 46 * Math.sin(a)).toFixed(1)}"/>`; }
+    for (const r of [14, 26, 38]) { const pts = []; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; pts.push(`${(60 + r * Math.cos(a)).toFixed(1)},${(60 + r * Math.sin(a)).toFixed(1)}`); } rings += `<polygon points="${pts.join(' ')}"/>`; }
+    return `<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="55" fill="#d93636"/><circle cx="60" cy="60" r="55" fill="none" stroke="#2b6fd6" stroke-width="6"/>
+      <g fill="none" stroke="#fff" stroke-width="2.6">${spokes}${rings}</g></svg>`;
+  },
+};
+const RANGER_COLORS = { Red: '#d93636', Blue: '#2b6fd6', Yellow: '#f2c230', Green: '#2fa84f', Black: '#2b2b33', Pink: '#f06fa8' };
+const PUP_LOOKS = [['cap', '#2b5bd6'], ['fire', '#d93636'], ['pilot', '#f06fa8'], ['hard', '#f2c230'], ['cap', '#2fa84f'], ['pilot', '#ff8a2a']];
+const THEME_ART = {
+  rangers: { hero: () => ART.ranger(pick(Object.values(RANGER_COLORS))), badge: ART.coin, card: () => ['Red', 'Blue', 'Yellow'].map(c => ART.ranger(RANGER_COLORS[c])) },
+  paw: { hero: () => ART.pup(...pick(PUP_LOOKS)), badge: ART.pupBadge, card: () => [ART.pup('cap', '#2b5bd6'), ART.pup('fire', '#d93636', '#f3f0ea', '#2b2b2b'), ART.pup('pilot', '#f06fa8', '#e8c48f', '#b07a3a')] },
+  spidey: { hero: () => pick([ART.spider('#d93636', '#2b6fd6'), ART.spider('#2b6fd6', '#d93636'), ART.spider('#f2f2f2', '#f06fa8')]), badge: ART.webBadge, card: () => [ART.spider('#d93636', '#2b6fd6'), ART.webBadge(), ART.spider('#2b6fd6', '#d93636')] },
+};
+function artEl(svg, cls) { const s = el('span', 'art ' + (cls || '')); s.innerHTML = svg; return s; }
+
 /* ---------- bonus missions (themed puzzle modes, big kid track) ---------- */
 const THEMES = {
   rangers: { name: 'Power Rangers', tag: 'Morph into math power!', icon: '🔴🔵🟡', mover: '🦸', goal: '⚡', steps: 6,
     reward: '⚡', rewardName: 'power coin', start: "It's morphin time! Solve the puzzles to power up the Rangers!", win: 'Ranger power! Mission complete!',
-    praise: ['Morphenomenal!', 'Go go math power!', 'Ranger strong!', 'Power up!'], boss: [['⚡', 'bolt'], ['💎', 'crystal']] },
+    praise: ['Morphenomenal!', 'Go go math power!', 'Ranger strong!', 'Power up!'], boss: [['coin', 'power coin'], ['gem', 'crystal']] },
   paw: { name: 'Paw Patrol', tag: 'Rescue missions', icon: '🐶🐾🚒', mover: '🐶', goal: '🏠', steps: 6,
     reward: '🦴', rewardName: 'pup badge', start: 'Paw Patrol is on a roll! Help the pups with a rescue!', win: 'Mission accomplished, pups!',
-    praise: ['Paw-some!', 'Great rescue!', 'Pups to the rescue!', 'Ruff ruff, right!'], boss: [['🦴', 'bone'], ['🐾', 'paw']] },
+    praise: ['Paw-some!', 'Great rescue!', 'Pups to the rescue!', 'Ruff ruff, right!'], boss: [['bone', 'bone'], ['pupBadge', 'badge']] },
   spidey: { name: 'Spidey', tag: 'Swing into puzzles', icon: '🕷️🕸️🏙️', mover: '🕷️', goal: '🕸️', steps: 6,
     reward: '🕸️', rewardName: 'web badge', start: 'Spidey needs your help to save the city!', win: 'City saved! Thwip!',
-    praise: ['Thwip! Correct!', 'Spidey sense says yes!', 'Amazing!', 'Web-tastic!'], boss: [['🕷️', 'spider'], ['🕸️', 'web']] },
+    praise: ['Thwip! Correct!', 'Spidey sense says yes!', 'Amazing!', 'Web-tastic!'], boss: [['spider', 'spider'], ['webBadge', 'web']] },
 };
 let M = null;   // current bonus mode, or null for the regular pond
 const two = a => { const s = shuffle(a.slice()); return [s[0], s[1]]; };
@@ -1483,7 +1592,7 @@ function tSecret(e, nm, t) {
     help: async () => { const d = el('div', 'objs'); for (let i = 0; i < k; i++) d.append(objs(a, '🔵')); $('#stage').firstChild.append(d); await say(`Share ${k * a} into ${k} equal groups.`); await countThrough([...d.firstChild.querySelectorAll('.obj')]); } };
 }
 function tBoss(th, t) {
-  const [[e1, n1], [e2, n2]] = th.boss, a = rnd(t === 1 ? 1 : 3, t === 1 ? 5 : 9), b = rnd(1, t === 1 ? 5 : 9);
+  const [[k1, n1], [k2, n2]] = th.boss, e1 = { svg: ART[k1]('#d93636', '#2b6fd6') }, e2 = { svg: ART[k2]('#d93636', '#2b6fd6') }, a = rnd(t === 1 ? 1 : 3, t === 1 ? 5 : 9), b = rnd(1, t === 1 ? 5 : 9);
   const text = `Boss puzzle! Two ${n1}s make ${2 * a}. A ${n1} and a ${n2} make ${a + b}. What number is the ${n2}?`;
   return { skill: 'teaser', boss: true, say: text, text: text.replace('Boss puzzle! ', ''), stage: stack(eq([e1, '+', e1, '=', 2 * a]), eq([e1, '+', e2, '=', a + b]), eq([e2, '=', '?'])), answer: b,
     choices: choicesFor(b, 4, 0, 20, [a, a + b]), teach: `${n1} is ${a}, so ${n2} is ${b}.`,
@@ -1500,7 +1609,7 @@ const TEMPLATES = {
     () => { const cols = shuffle(RC.slice()).slice(0, 3).map(([n, e]) => [e, n.toLowerCase()]); return tColors('The Rangers line up in a pattern. Which color comes next?', cols); },
     t => { const s = t === 1 ? pick([2, 5, 10]) : pick([5, 10]); return tSkip('bpattern', `Unlock the Morpher! Count by ${s}s. What comes next?`, s, s * rnd(t === 1 ? 0 : 2, t === 1 ? 2 : 6), '🔓'); },
     t => { const k = rnd(2, t === 1 ? 3 : 5), n = t === 1 ? 2 : 5; return tGroups(`${k} Zords join together. Each Zord has ${n} power lights. How many lights in all?`, k, n, '💡'); },
-    t => tSecret('⚡', 'power bolt', t),
+    t => tSecret({ svg: ART.coin() }, 'power coin', t),
   ],
   paw: [
     t => { const [a, b] = addPair(t), [[p1, him1], [p2]] = two(PUPS); return tArith('story', `${p1} has ${a} pup treats. ${p2} gives ${him1} ${b} more. How many treats does ${p1} have now?`, 'add', a, b, '🦴'); },
@@ -1510,7 +1619,7 @@ const TEMPLATES = {
     t => { const s = t === 1 ? pick([2, 5, 10]) : pick([5, 10]); return tSkip('bpattern', `Skye flies higher and higher by ${s}s. What comes next?`, s, s * rnd(t === 1 ? 0 : 2, t === 1 ? 2 : 6), '🚁'); },
     t => { const k = rnd(2, t === 1 ? 3 : 4), n = t === 1 ? 2 : 4; return tGroups(`${k} pups get ready. Each pup has ${n} ${n === 2 ? 'ears' : 'paws'}. How many ${n === 2 ? 'ears' : 'paws'} in all?`, k, n, n === 2 ? '👂' : '🐾'); },
     () => Math.random() < .5 ? tOdd('Which one is NOT a pup?', ['🐶', '🐕', '🐩', '🦮'], pick(['🐱', '🐰', '🐭', '🐔']), 'The others are all pups!') : tOdd('Which one is NOT a rescue vehicle?', ['🚒', '🚓', '🚑', '🚁'], pick(['🍦', '🎈', '🧸']), 'The others all go on rescues!'),
-    t => tSecret('🦴', 'bone', t),
+    t => tSecret({ svg: ART.bone() }, 'bone', t),
   ],
   spidey: [
     t => { const [a, b] = addPair(t); return tArith('story', `Spidey swings past ${a} buildings, then ${b} more. How many buildings did he swing past?`, 'add', a, b, '🏢'); },
@@ -1522,10 +1631,17 @@ const TEMPLATES = {
       : (k => tRiddle(`Each Doc Ock has 4 robot arms. How many robot arms do ${k} Doc Ocks have?`, 4 * k, `Count by 4s: ${[...Array(k)].map((_, i) => 4 * (i + 1)).join(', ')}.`, '🐙'))(rnd(3, 5)),
     t => { const s = t === 1 ? pick([2, 5, 10]) : pick([5, 10]); return tSkip('bpattern', `Spidey climbs the building by ${s}s. What floor comes next?`, s, s * rnd(t === 1 ? 0 : 2, t === 1 ? 2 : 6), '🏙️'); },
     t => { const k = rnd(2, t === 1 ? 3 : 5), n = t === 1 ? 2 : pick([2, 5]); return tGroups(`${k} heroes each shoot ${n} webs. How many webs in all?`, k, n, '🕸️'); },
-    t => tSecret('🕷️', 'spider', t),
+    t => tSecret({ svg: ART.spider('#d93636', '#2b6fd6') }, 'spider', t),
   ],
 };
-let lastT = -1;
+let lastT = -1, missionHero = '';
+// Show the character a puzzle talks about when we can tell; otherwise a random one.
+const PUP_BY_NAME = { Chase: ['cap', '#2b5bd6'], Marshall: ['fire', '#d93636', '#f3f0ea', '#2b2b2b'], Skye: ['pilot', '#f06fa8', '#e8c48f', '#b07a3a'], Rubble: ['hard', '#f2c230', '#d9b07a', '#9c6b35'], Rocky: ['cap', '#2fa84f', '#a9a9a9', '#6d6d6d'], Zuma: ['pilot', '#ff8a2a', '#8a5528', '#5a3415'], Everest: ['cap', '#7b4fd6', '#d8d8d8', '#7a7a7a'] };
+function heroFor(text) {
+  if (M === 'rangers') { const c = Object.keys(RANGER_COLORS).find(n => text.includes(`The ${n} Ranger`)); if (c) return ART.ranger(RANGER_COLORS[c]); }
+  if (M === 'paw') { const n = Object.keys(PUP_BY_NAME).find(k => text.startsWith(k) || text.includes(' ' + k + ' ')); if (n) return ART.pup(...PUP_BY_NAME[n]); }
+  return THEME_ART[M].hero();
+}
 function themeQuestion() {
   const th = THEMES[M], t = tier();
   let q;
@@ -1537,6 +1653,7 @@ function themeQuestion() {
   }
   q.p = { theme: M, text: q.text };
   q.noReview = true;
+  if (q.stage) q.stage = stack(artEl(heroFor(q.text), 'stage-art'), q.stage);
   q.level = P.skills[q.skill].level;
   return q;
 }
@@ -1634,11 +1751,11 @@ let slots = [];
 function buildPond() {
   const pond = $('#pond'), frog = $('#frog'), n = P ? pondLen() : 10, at = P ? getPad() : 0;
   pond.className = 'pond' + (M ? ' th th-' + M : '');
-  frog.innerHTML = M ? `<span class="hero">${THEMES[M].mover}</span>` : FROG;
+  frog.innerHTML = M ? `<span class="art">${missionHero || (missionHero = THEME_ART[M].hero())}</span>` : FROG;
   pond.querySelectorAll('.slot').forEach(s => s.remove());
   slots = [];
   const rock = el('div', 'slot rock'); pond.insertBefore(rock, frog); slots.push(rock);
-  for (let i = 1; i <= n; i++) { const p = el('div', 'slot pad' + (i <= at ? ' done' : '') + (i === n ? ' goal' : '')); if (i === n) p.dataset.goal = M ? THEMES[M].goal : '🌸'; pond.insertBefore(p, frog); slots.push(p); }
+  for (let i = 1; i <= n; i++) { const p = el('div', 'slot pad' + (i <= at ? ' done' : '') + (i === n ? ' goal' : '')); if (i === n) { p.dataset.goal = M ? '' : '🌸'; if (M) p.append(artEl(THEME_ART[M].badge(), 'goal-art')); } pond.insertBefore(p, frog); slots.push(p); }
   pond.style.justifyContent = n < 10 ? 'space-around' : 'space-between';
   placeFrog(false);
 }
@@ -1659,7 +1776,7 @@ function party() {
     const th = THEMES[M]; P.badges[M] = (P.badges[M] || 0) + 1; setPad(0); save();
     const n = P.badges[M];
     $('#partyTitle').textContent = th.win;
-    $('#newFriend').textContent = th.reward;
+    $('#newFriend').replaceChildren(artEl(THEME_ART[M].badge(), 'reward-art'));
     $('#partyText').textContent = `${P.name} earned a ${th.rewardName}! That makes ${n}.`;
     $('#seeFriends').hidden = true; $('#again').textContent = 'Next mission';
     $('#party').hidden = false; confetti();
@@ -1761,14 +1878,15 @@ function renderModes() {
   $('#modeAsk').textContent = `Pick a game, ${P.name}!`;
   const card = (mode, av, name, sub) => {
     const b = el('button', 'player mode' + (mode ? ' m-' + mode : '')); b.dataset.mode = mode || '';
-    b.append(el('span', 'av', av), el('b', '', name), el('small', '', sub)); box.append(b);
+    let a; if (typeof av === 'string') a = el('span', 'av', av); else { a = el('span', 'av arts'); av.forEach(svg => a.append(artEl(svg))); }
+    b.append(a, el('b', '', name), el('small', '', sub)); box.append(b);
   };
   card(null, '🐸', 'Lily Pad', `All your games · ${P.stickers.length} pond ${P.stickers.length === 1 ? 'friend' : 'friends'}`);
-  for (const k in THEMES) { const th = THEMES[k], n = P.badges[k] || 0; card(k, th.icon, th.name, `${th.tag} · ${n} ${th.rewardName}${n === 1 ? '' : 's'}`); }
+  for (const k in THEMES) { const th = THEMES[k], n = P.badges[k] || 0; card(k, THEME_ART[k].card(), th.name, `${th.tag} · ${n} ${th.rewardName}${n === 1 ? '' : 's'}`); }
 }
 $('#modes').addEventListener('click', e => { const b = e.target.closest('.mode'); if (b) beginMode(b.dataset.mode || null); });
 function beginMode(m) {
-  M = m; lastT = -1;
+  M = m; lastT = -1; missionHero = '';
   $('#start').hidden = true; $('#modeView').hidden = true; $('#playView').hidden = false; $('#home').hidden = false; $('#friendsBtn').hidden = false;
   buildPond();
   sayNow(m ? THEMES[m].start : `Let's go, ${P.name}!`);
@@ -1794,7 +1912,7 @@ let gTab = null, addAge = 5, pending = null;
 function openGrown(tab) {
   hush();
   gTab = tab || (P && P.id) || (store.players[0] && store.players[0].id) || 'add';
-  $('#voiceOn').checked = store.voice;
+  $('#voiceOn').checked = store.voice; pickVoice(); renderVoicePick();
   hideConfirm(); renderGrown();
   $('#grown').hidden = false;
 }
@@ -1879,6 +1997,15 @@ $('#removeBtn').addEventListener('click', () => {
 });
 $('#voiceOn').addEventListener('change', e => { store.voice = e.target.checked; if (!store.voice) hush(); save(); });
 $('#closeGrown').addEventListener('click', closeGrown);
+function renderVoicePick() {
+  const sel = $('#voicePick'); sel.replaceChildren();
+  if (!voices.length) { const o = el('option', '', 'Default voice'); o.value = ''; sel.append(o); sel.disabled = true; return; }
+  sel.disabled = false;
+  voices.forEach(v => { const o = el('option', '', v.name + (/premium|enhanced/i.test(v.name) ? '' : voiceScore(v) >= 30 ? '' : ' (basic)')); o.value = v.name; sel.append(o); });
+  sel.value = voice ? voice.name : voices[0].name;
+}
+$('#voicePick').addEventListener('change', e => { store.voiceName = e.target.value; voice = voices.find(v => v.name === store.voiceName) || voice; save(); sayNow("Hi! I'm your math buddy. What is 8 plus 7?"); });
+$('#voiceTest').addEventListener('click', () => sayNow("Hi! I'm your math buddy. What is 8 plus 7?"));
 $('#grown').addEventListener('click', e => { if (e.target.id === 'grown') closeGrown(); });
 
 renderPicker();

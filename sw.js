@@ -1,6 +1,6 @@
 // Offline support: the app shell is cached on first visit; fonts are cached as they load.
 // Bump VERSION when the app changes so iPads pick up the new files.
-const VERSION = 'lilypad-v4';
+const VERSION = 'lilypad-v5';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

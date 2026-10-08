@@ -17,7 +17,7 @@ Stretch skills for big kids who are ready: **bigger numbers** (30 + 20, 34 + 5, 
 ## Bonus missions
 Big kids pick a game after choosing their name: the regular Lily Pad, or a themed bonus mission (Power Rangers, Paw Patrol or Spidey). Each mission is six themed puzzles (story problems, missing numbers, skip counting, color patterns, equal groups, riddles, secret symbols) ending with a boss puzzle, and earns a badge. Puzzle difficulty follows the child's current levels, and answers count toward the same skills.
 
-Fan-made for one family's kids; not affiliated with or endorsed by the owners of these characters. No logos or artwork are used.
+Fan-made for one family's kids; not affiliated with or endorsed by the owners of these characters. No official logos or artwork are used; the character pictures are original drawings.
 
 Every child has a **pond friends** book (top bar during play): 20 animals to collect, each with a name that's spoken when tapped.
 
@@ -27,6 +27,9 @@ Tens and ones gets extra practice until it is mastered, and after each right ans
 Each skill has levels. Four first-try right answers out of the last five moves a skill up; a run of misses steps it back down. Missed questions come back a few turns later, and new games open as earlier skills grow. A wrong answer triggers a guided "let's count together" walkthrough instead of a buzzer.
 
 Grown-ups: press and hold the button at the top right for names, voice, per-skill progress and level controls, and a "head start" for children who are already ahead.
+
+## Voice
+The game uses the device's built-in speech. For the most natural voice on an iPad, download a Premium voice (Settings → Accessibility → Spoken Content → Voices → English, e.g. Ava or Zoe Premium), then pick it in the Grown-ups corner. The game automatically prefers Premium and Enhanced voices and skips novelty voices.
 
 ## Install on an iPad
 1. Open the link above in **Safari**.
