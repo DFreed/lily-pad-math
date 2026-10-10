@@ -1640,14 +1640,55 @@ let lastT = -1, missionHero = '';
 // Show the character a puzzle talks about when we can tell; otherwise a random one.
 const PUP_BY_NAME = { Chase: ['cap', '#2b5bd6'], Marshall: ['fire', '#d93636', '#f3f0ea', '#2b2b2b'], Skye: ['pilot', '#f06fa8', '#e8c48f', '#b07a3a'], Rubble: ['hard', '#f2c230', '#d9b07a', '#9c6b35'], Rocky: ['cap', '#2fa84f', '#a9a9a9', '#6d6d6d'], Zuma: ['pilot', '#ff8a2a', '#8a5528', '#5a3415'], Everest: ['cap', '#7b4fd6', '#d8d8d8', '#7a7a7a'] };
 function heroFor(text) {
-  if (M === 'rangers') { const c = Object.keys(RANGER_COLORS).find(n => text.includes(`The ${n} Ranger`)); if (c) return ART.ranger(RANGER_COLORS[c]); }
+  if (M === 'rangers') { const c = Object.keys(RANGER_COLORS).find(n => text.toLowerCase().includes(`the ${n.toLowerCase()} ranger`)); if (c) return ART.ranger(RANGER_COLORS[c]); }
   if (M === 'paw') { const n = Object.keys(PUP_BY_NAME).find(k => text.startsWith(k) || text.includes(' ' + k + ' ')); if (n) return ART.pup(...PUP_BY_NAME[n]); }
   return THEME_ART[M].hero();
 }
+// Little learners get gentle themed versions of their own games (no boss puzzle).
+const LITTLE_THEME = {
+  paw: { who: ['Chase', 'Marshall', 'Skye', 'Rubble', 'Rocky', 'Zuma'], e: '🦴', pl: 'bones', noun: 'pup' },
+  rangers: { who: ['the Red Ranger', 'the Blue Ranger', 'the Yellow Ranger', 'the Pink Ranger'], e: '⭐', pl: 'stars', noun: 'Ranger' },
+  spidey: { who: ['Spidey', 'Ghost-Spider', 'Spin'], e: '🕸️', pl: 'webs', noun: 'spider' },
+};
+function littleThemeQ() {
+  const lt = LITTLE_THEME[M], who = pick(lt.who), Who = who[0].toUpperCase() + who.slice(1), lv = k => P.skills[k].level;
+  const kinds = ['lcount', 'lnum', 'lshape', 'lsize', 'lmore', 'lpattern'].filter(k => isUnlocked(k));
+  let k; do { k = pick(kinds); } while (k === littleThemeQ.last && kinds.length > 1);
+  littleThemeQ.last = k;
+  if (k === 'lcount') {
+    const hi = [3, 5, 10][lv(k) - 1], n = rnd(1, hi), st = objs(n, lt.e), t = `How many ${lt.pl} does ${who} have? Let's count!`;
+    return { skill: k, say: t, text: t, stage: st, answer: n, dots: lv(k) <= 2, choices: choicesFor(n, lv(k) === 1 ? 2 : 3, 1, hi),
+      help: async () => { await countThrough(st.querySelectorAll('.obj')); await say(`${n}! ${who} has ${n}.`); } };
+  }
+  if (k === 'lnum') {
+    const hi = [3, 5, 10][lv(k) - 1], n = rnd(1, hi), st = stack(el('div', 'listen', '?')), t = `${Who} needs the number ${n}! Find ${n}.`;
+    return { skill: k, say: t, text: t, stage: st, answer: n, choices: choicesFor(n, lv(k) === 1 ? 2 : 3, 1, hi),
+      help: async () => { const d = objs(n, '🔵'); st.replaceChildren(d); await countThrough(d.querySelectorAll('.obj')); await say(`This is how ${n} looks. Find ${n}!`); } };
+  }
+  if (k === 'lsize') {
+    const three = lv(k) === 3, ask = lv(k) === 1 ? 'big' : pick(['big', 'small']), sizes = shuffle(three ? [44, 80, 130] : [50, 130]);
+    const hero = heroFor(who), cards = sizes.map(px => { const a = artEl(hero); a.style.width = a.style.height = px + 'px'; return a; });
+    const target = ask === 'big' ? Math.max(...sizes) : Math.min(...sizes), word = three ? (ask === 'big' ? 'biggest' : 'smallest') : ask;
+    const t = three ? `Which ${lt.noun} is the ${word}?` : `Which ${lt.noun} is ${word}?`;
+    return { skill: k, kind: 'cards', cards, say: t, text: t, stage: null, answer: String(sizes.indexOf(target)),
+      help: async () => { await say(ask === 'big' ? 'Look for the one that takes up the most room!' : 'Look for the tiny one!'); } };
+  }
+  if (k === 'lmore') {
+    let a, b; const hi = lv(k) === 1 ? 4 : 6; do { a = rnd(1, hi); b = rnd(1, hi); } while (a === b || (lv(k) === 1 && Math.abs(a - b) < 2));
+    const cards = [objs(a, lt.e), objs(b, lt.e)], t = `Which side has more ${lt.pl}?`;
+    return { skill: k, kind: 'cards', cards, say: t, text: t, stage: null, answer: a > b ? '0' : '1',
+      help: async () => { await countThrough(cards[0].querySelectorAll('.obj')); await countThrough(cards[1].querySelectorAll('.obj')); await say(`${Math.max(a, b)} is more!`); } };
+  }
+  const q = GEN[k](lv(k));
+  q.say = q.text = k === 'lshape' ? `${Who} needs a ${q.p.target}! Find the ${q.p.target}.` : `Help ${who} finish the pattern! What comes next?`;
+  q.skill = k;
+  return q;
+}
 function themeQuestion() {
-  const th = THEMES[M], t = tier();
+  const th = THEMES[M], t = P.track === 'big' ? tier() : 1;
   let q;
-  if (getPad() === th.steps - 1) q = tBoss(th, t);
+  if (P.track === 'little') q = littleThemeQ();
+  else if (getPad() === th.steps - 1) q = tBoss(th, t);
   else {
     const list = TEMPLATES[M]; let i;
     do { i = rnd(0, list.length - 1); } while (i === lastT && list.length > 1);
@@ -1655,7 +1696,7 @@ function themeQuestion() {
   }
   q.p = { theme: M, text: q.text };
   q.noReview = true;
-  if (q.stage) q.stage = stack(artEl(heroFor(q.text), 'stage-art'), q.stage);
+  q.stage = q.stage ? stack(artEl(heroFor(q.text), 'stage-art'), q.stage) : stack(artEl(heroFor(q.text), 'stage-art'));
   q.level = P.skills[q.skill].level;
   return q;
 }
@@ -1664,7 +1705,7 @@ function themeQuestion() {
 function padKey() { return M ? 'pad_' + M : 'pad'; }
 function getPad() { return (P && P[padKey()]) || 0; }
 function setPad(v) { P[padKey()] = v; }
-function pondLen() { return M ? THEMES[M].steps : TRACK[P.track].pond; }
+function pondLen() { return M ? (P.track === 'little' ? 5 : THEMES[M].steps) : TRACK[P.track].pond; }
 
 /* ---------- play loop ---------- */
 let q = null, tries = 0, busy = false;
@@ -1868,7 +1909,7 @@ function startPlay(id) {
   store.current = id; save();
   try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) {}
   recentSkills = []; lastKey = ''; M = null;
-  if (P.track === 'big') {
+  {
     $('#start').hidden = true; $('#modeView').hidden = false; $('#home').hidden = false;
     renderModes(); sayNow(`Hi ${P.name}! Pick a game.`);
     return;

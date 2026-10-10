@@ -15,7 +15,7 @@ Big kids also get **math facts** that cross ten (8 + 7, ? + 3 = 12, 15 − 7) ta
 Stretch skills for big kids who are ready: **bigger numbers** (30 + 20, 34 + 5, 70 − 30, 27 + 8, 23 + 14), **equal groups** (groups, doubles and near doubles, sharing, arrays), **telling time** (o'clock, half past, one hour later) and **coins** (pennies, nickels, dimes).
 
 ## Bonus missions
-Big kids pick a game after choosing their name: the regular Lily Pad, or a themed bonus mission (Power Rangers, Paw Patrol or Spidey). Each mission is six themed puzzles (story problems, missing numbers, skip counting, color patterns, equal groups, riddles, secret symbols) ending with a boss puzzle, and earns a badge. Puzzle difficulty follows the child's current levels, and answers count toward the same skills.
+Every child picks a game after choosing their name: the regular Lily Pad, or a themed bonus mission (Power Rangers, Paw Patrol or Spidey). Each mission is six themed puzzles (story problems, missing numbers, skip counting, color patterns, equal groups, riddles, secret symbols) ending with a boss puzzle, and earns a badge. Little learners get gentle versions of their own games (counting bones, finding numbers, shapes, big and small, more, patterns) over five steps with no boss. Puzzle difficulty follows the child's current levels, and answers count toward the same skills.
 
 Fan-made for one family's kids; not affiliated with or endorsed by the owners of these characters. No official logos or artwork are used; the character pictures are original drawings.
 
