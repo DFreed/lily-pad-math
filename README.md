@@ -29,7 +29,7 @@ Each skill has levels. Four first-try right answers out of the last five moves a
 Grown-ups: press and hold the button at the top right for names, voice, per-skill progress and level controls, and a "head start" for children who are already ahead.
 
 ## Voice
-The game uses the device's built-in speech. For the most natural voice on an iPad, download a Premium voice (Settings → Accessibility → Spoken Content → Voices → English, e.g. Ava or Zoe Premium), then pick it in the Grown-ups corner. The game automatically prefers Premium and Enhanced voices and skips novelty voices.
+The game uses the device's built-in speech. iPads only offer web apps the basic voices (downloaded Premium voices aren't available to them), so the game prefers Samantha, skips novelty voices, and lets a grown-up pick another voice in the Grown-ups corner.
 
 ## Install on an iPad
 1. Open the link above in **Safari**.
